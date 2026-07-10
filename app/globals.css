@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────
+   Aprende LMS · Tema base
+   Los colores vienen de las variables --brand-* que inyecta el
+   layout desde lib/brand.ts (white-label). Aquí solo se mapean a
+   tokens semánticos y utilidades. No hay colores de marca hardcodeados.
+────────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: var(--brand-bg, #080b12);
+  --surface: var(--brand-surface, #0f141f);
+  --surface-2: var(--brand-surface-2, #161c2b);
+  --border: var(--brand-border, rgba(255, 255, 255, 0.08));
+  --border-strong: var(--brand-border-strong, rgba(255, 255, 255, 0.16));
+  --primary: var(--brand-primary, #2f6bff);
+  --primary-light: var(--brand-primary-light, #5b8cff);
+  --on-primary: var(--brand-on-primary, #ffffff);
+  --primary-dim: var(--brand-primary-dim, rgba(47, 107, 255, 0.14));
+  --primary-glow: var(--brand-primary-glow, rgba(47, 107, 255, 0.22));
+  --accent: var(--brand-accent, #22d3ee);
+  --text: var(--brand-text, #eaf0fb);
+  --text-muted: var(--brand-text-muted, rgba(234, 240, 251, 0.64));
+  --text-faint: var(--brand-text-faint, rgba(234, 240, 251, 0.4));
+  --radius: 14px;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Tipografía utilitaria ── */
+.font-serif-brand {
+  font-family: var(--font-serif), Georgia, serif;
+}
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ── Botones ── */
+.btn-primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  color: var(--on-primary);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px var(--primary-glow);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+
+/* ── Superficies ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.card-glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.card-glass:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* ── Badge ── */
+.badge {
+  background: var(--primary-dim);
+  color: var(--primary-light);
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* ── Barra de progreso ── */
+.progress-bar {
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+}
+
+/* ── Gradiente de texto ── */
+.text-gradient {
+  background: linear-gradient(135deg, var(--text) 0%, var(--primary-light) 55%, var(--text) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Glow ── */
+.glow-primary {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent),
+    0 8px 30px var(--primary-glow);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary) 45%, transparent);
+}
