@@ -1,13 +1,20 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft, ArrowRight, PlayCircle, FileText, HelpCircle } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { VideoPlayer } from "@/components/VideoPlayer";
+import { ContentRenderer } from "@/components/ContentRenderer";
 import { QuizTaker } from "@/components/QuizTaker";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Leccion, Curso, Quiz, QuizPregunta, QuizOpcion } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
+
+const TIPO_META = {
+  video: { icon: PlayCircle, label: "Lección" },
+  texto: { icon: FileText, label: "Lectura" },
+  quiz: { icon: HelpCircle, label: "Evaluación" },
+} as const;
 
 export default async function LeccionPage({ params }: { params: Promise<{ leccionId: string }> }) {
   const { leccionId } = await params;
@@ -18,14 +25,22 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
 
   const { data: leccionRaw } = await supabase
     .from("lecciones")
-    .select("id, curso_id, titulo, tipo, contenido, video_url")
+    .select("id, curso_id, titulo, tipo, contenido, video_url, orden")
     .eq("id", leccionId)
     .single();
-  const leccion = leccionRaw as Pick<Leccion, "id" | "curso_id" | "titulo" | "tipo" | "contenido" | "video_url"> | null;
+  const leccion = leccionRaw as Pick<Leccion, "id" | "curso_id" | "titulo" | "tipo" | "contenido" | "video_url" | "orden"> | null;
   if (!leccion) notFound();
 
-  const { data: cursoRaw } = await supabase.from("cursos").select("slug, titulo").eq("id", leccion.curso_id).single();
+  const [{ data: cursoRaw }, { data: hermanasRaw }] = await Promise.all([
+    supabase.from("cursos").select("slug, titulo").eq("id", leccion.curso_id).single(),
+    supabase.from("lecciones").select("id, titulo, orden").eq("curso_id", leccion.curso_id).order("orden"),
+  ]);
   const curso = cursoRaw as Pick<Curso, "slug" | "titulo"> | null;
+  const hermanas = (hermanasRaw as Pick<Leccion, "id" | "titulo" | "orden">[] | null) ?? [];
+  const idx = hermanas.findIndex((l) => l.id === leccion.id);
+  const anterior = idx > 0 ? hermanas[idx - 1] : null;
+  const siguiente = idx >= 0 && idx < hermanas.length - 1 ? hermanas[idx + 1] : null;
+  const progreso = hermanas.length > 0 ? Math.round(((idx + 1) / hermanas.length) * 100) : 0;
 
   // Quiz (si la lección es de tipo quiz). Se seleccionan opciones SIN es_correcta.
   let quiz: { id: string; titulo: string; preguntas: { id: string; enunciado: string; tipo: "unica" | "multiple"; opciones: { id: string; texto: string }[] }[] } | null = null;
@@ -48,30 +63,90 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
     }
   }
 
+  const meta = TIPO_META[leccion.tipo] ?? TIPO_META.texto;
+
   return (
     <AppShell user={user}>
       <div className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-12">
-        {curso && (
-          <Link href={`/cursos/${curso.slug}`} className="text-xs" style={{ color: "var(--text-faint)" }}>
-            ← {curso.titulo}
-          </Link>
-        )}
-        <h1 className="mt-3 mb-6 font-serif-brand" style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 700, color: "var(--text)" }}>
-          {leccion.titulo}
-        </h1>
+        <div className="animate-rise">
+          {curso && (
+            <Link href={`/cursos/${curso.slug}`}
+              className="group inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-80"
+              style={{ color: "var(--text-faint)" }}>
+              <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" /> {curso.titulo}
+            </Link>
+          )}
 
-        {leccion.tipo === "video" && leccion.video_url && <VideoPlayer url={leccion.video_url} />}
+          <div className="mt-4 flex items-center gap-3">
+            <span className="badge inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.68rem] font-bold uppercase tracking-wider">
+              <meta.icon className="h-3.5 w-3.5" /> {meta.label}
+            </span>
+            {hermanas.length > 0 && (
+              <span className="text-xs tabular-nums" style={{ color: "var(--text-faint)" }}>
+                {idx + 1} de {hermanas.length}
+              </span>
+            )}
+          </div>
 
-        {leccion.tipo === "texto" && leccion.contenido && (
-          <article className="whitespace-pre-line text-[0.95rem] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            {leccion.contenido}
-          </article>
-        )}
+          <h1 className="mt-3 font-serif-brand tracking-tight"
+            style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 700, color: "var(--text)" }}>
+            {leccion.titulo}
+          </h1>
 
-        {leccion.tipo === "quiz" && (
-          quiz && quiz.preguntas.length > 0
-            ? <QuizTaker quizId={quiz.id} titulo={quiz.titulo} preguntas={quiz.preguntas} />
-            : <p className="card p-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>Este quiz aún no tiene preguntas.</p>
+          {/* Progreso dentro del curso */}
+          {hermanas.length > 1 && (
+            <div className="progress-track mt-4 h-1.5 w-full">
+              <div className="progress-bar h-full" style={{ width: `${progreso}%` }} />
+            </div>
+          )}
+        </div>
+
+        <div className="animate-rise rise-2 mt-7">
+          {leccion.tipo === "video" && leccion.video_url && (
+            <ContentRenderer url={leccion.video_url} titulo={leccion.titulo} />
+          )}
+
+          {leccion.tipo === "texto" && leccion.contenido && (
+            <article className="card whitespace-pre-line p-7 text-[0.95rem] leading-relaxed sm:p-9"
+              style={{ color: "var(--text-muted)" }}>
+              {leccion.contenido}
+            </article>
+          )}
+
+          {leccion.tipo === "quiz" && (
+            quiz && quiz.preguntas.length > 0
+              ? <QuizTaker quizId={quiz.id} titulo={quiz.titulo} preguntas={quiz.preguntas} />
+              : <p className="card p-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+                  Este quiz aún no tiene preguntas.
+                </p>
+          )}
+        </div>
+
+        {/* Navegación entre lecciones */}
+        {(anterior || siguiente) && (
+          <div className="animate-rise rise-3 mt-10 flex items-stretch justify-between gap-3 border-t pt-6"
+            style={{ borderColor: "var(--border)" }}>
+            {anterior ? (
+              <Link href={`/aprender/${anterior.id}`}
+                className="card group flex max-w-[48%] items-center gap-3 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
+                <ArrowLeft className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-x-0.5" style={{ color: "var(--primary)" }} />
+                <span className="min-w-0">
+                  <span className="block text-[0.65rem] font-semibold uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>Anterior</span>
+                  <span className="block truncate text-sm font-medium" style={{ color: "var(--text)" }}>{anterior.titulo}</span>
+                </span>
+              </Link>
+            ) : <span />}
+            {siguiente && (
+              <Link href={`/aprender/${siguiente.id}`}
+                className="card group ml-auto flex max-w-[48%] items-center gap-3 px-4 py-3 text-right transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
+                <span className="min-w-0">
+                  <span className="block text-[0.65rem] font-semibold uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>Siguiente</span>
+                  <span className="block truncate text-sm font-medium" style={{ color: "var(--text)" }}>{siguiente.titulo}</span>
+                </span>
+                <ArrowRight className="arrow-slide h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
+              </Link>
+            )}
+          </div>
         )}
       </div>
     </AppShell>

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Permite redirigir la salida de build (útil en CI/sandboxes).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   reactCompiler: true,
   images: {
     remotePatterns: [

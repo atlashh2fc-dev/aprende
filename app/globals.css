@@ -1,28 +1,50 @@
 @import "tailwindcss";
 
 /* ──────────────────────────────────────────────────────────────
-   Aprende LMS · Tema base
+   Aprende LMS · Tema ejecutivo (claro por defecto, oscuro opcional)
    Los colores vienen de las variables --brand-* que inyecta el
    layout desde lib/brand.ts (white-label). Aquí solo se mapean a
-   tokens semánticos y utilidades. No hay colores de marca hardcodeados.
+   tokens semánticos, sombras y micro-interacciones.
 ────────────────────────────────────────────────────────────── */
 
 :root {
-  --bg: var(--brand-bg, #080b12);
-  --surface: var(--brand-surface, #0f141f);
-  --surface-2: var(--brand-surface-2, #161c2b);
-  --border: var(--brand-border, rgba(255, 255, 255, 0.08));
-  --border-strong: var(--brand-border-strong, rgba(255, 255, 255, 0.16));
-  --primary: var(--brand-primary, #2f6bff);
-  --primary-light: var(--brand-primary-light, #5b8cff);
+  --bg: var(--brand-bg, #f6f7fb);
+  --surface: var(--brand-surface, #ffffff);
+  --surface-2: var(--brand-surface-2, #eef0f7);
+  --border: var(--brand-border, rgba(15, 23, 42, 0.08));
+  --border-strong: var(--brand-border-strong, rgba(15, 23, 42, 0.16));
+  --primary: var(--brand-primary, #4f46e5);
+  --primary-light: var(--brand-primary-light, #6366f1);
   --on-primary: var(--brand-on-primary, #ffffff);
-  --primary-dim: var(--brand-primary-dim, rgba(47, 107, 255, 0.14));
-  --primary-glow: var(--brand-primary-glow, rgba(47, 107, 255, 0.22));
-  --accent: var(--brand-accent, #22d3ee);
-  --text: var(--brand-text, #eaf0fb);
-  --text-muted: var(--brand-text-muted, rgba(234, 240, 251, 0.64));
-  --text-faint: var(--brand-text-faint, rgba(234, 240, 251, 0.4));
-  --radius: 14px;
+  --primary-dim: var(--brand-primary-dim, rgba(79, 70, 229, 0.1));
+  --primary-glow: var(--brand-primary-glow, rgba(79, 70, 229, 0.24));
+  --accent: var(--brand-accent, #059669);
+  --accent-dim: var(--brand-accent-dim, rgba(5, 150, 105, 0.12));
+  --text: var(--brand-text, #0f172a);
+  --text-muted: var(--brand-text-muted, rgba(15, 23, 42, 0.64));
+  --text-faint: var(--brand-text-faint, rgba(15, 23, 42, 0.42));
+  --shadow-color: var(--brand-shadow, #334155);
+  --radius: 16px;
+
+  --shadow-xs: 0 1px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent);
+  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 7%, transparent),
+    0 4px 14px color-mix(in srgb, var(--shadow-color) 6%, transparent);
+  --shadow-md: 0 2px 6px color-mix(in srgb, var(--shadow-color) 8%, transparent),
+    0 12px 32px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+  --shadow-lg: 0 4px 10px color-mix(in srgb, var(--shadow-color) 9%, transparent),
+    0 24px 56px color-mix(in srgb, var(--shadow-color) 14%, transparent);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html[data-theme="dark"] {
+  --shadow-xs: 0 1px 2px color-mix(in srgb, var(--shadow-color) 30%, transparent);
+  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 32%, transparent),
+    0 4px 14px color-mix(in srgb, var(--shadow-color) 28%, transparent);
+  --shadow-md: 0 2px 6px color-mix(in srgb, var(--shadow-color) 34%, transparent),
+    0 12px 32px color-mix(in srgb, var(--shadow-color) 38%, transparent);
+  --shadow-lg: 0 4px 10px color-mix(in srgb, var(--shadow-color) 36%, transparent),
+    0 24px 56px color-mix(in srgb, var(--shadow-color) 46%, transparent);
 }
 
 * {
@@ -35,9 +57,25 @@ body {
   color: var(--text);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+::selection {
+  background: var(--primary-glow);
+}
+
+/* Focus visible accesible y elegante */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* ── Tipografía utilitaria ── */
@@ -45,7 +83,7 @@ body {
   font-family: var(--font-serif), Georgia, serif;
 }
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -53,30 +91,41 @@ body {
 
 /* ── Botones ── */
 .btn-primary {
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: var(--on-primary);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.18s var(--ease-out), box-shadow 0.25s var(--ease-out),
+    opacity 0.2s ease;
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 30px var(--primary-glow);
+  box-shadow: 0 10px 26px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-xs);
+}
+
 .btn-ghost {
-  background: transparent;
+  background: var(--surface);
   color: var(--text-muted);
   border: 1px solid var(--border-strong);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: var(--shadow-xs);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease,
+    transform 0.18s var(--ease-out), box-shadow 0.25s var(--ease-out);
 }
 .btn-ghost:hover {
-  color: var(--text);
-  border-color: var(--primary);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
   background: var(--primary-dim);
+  transform: translateY(-1px);
+}
+.btn-ghost:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* ── Superficies ── */
@@ -84,56 +133,137 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
 }
+
+/* Tarjeta interactiva: eleva + sombra + borde al pasar el cursor */
 .card-glass {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: border-color 0.25s ease, transform 0.25s ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.25s ease, transform 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out);
 }
 .card-glass:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* ── Badge ── */
+/* ── Badge / chip ── */
 .badge {
   background: var(--primary-dim);
-  color: var(--primary-light);
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
+}
+.badge-accent {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.chip:hover {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  background: var(--primary-dim);
 }
 
 /* ── Barra de progreso ── */
+.progress-track {
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
 .progress-bar {
   background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 999px;
+  transition: width 0.6s var(--ease-out);
 }
 
 /* ── Gradiente de texto ── */
 .text-gradient {
-  background: linear-gradient(135deg, var(--text) 0%, var(--primary-light) 55%, var(--text) 100%);
+  background: linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 60%, var(--accent) 130%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* ── Glow ── */
-.glow-primary {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent),
-    0 8px 30px var(--primary-glow);
+/* ── Animaciones de entrada (micro-interacciones) ── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 0.6s var(--ease-out) both;
+}
+.rise-1 { animation-delay: 0.05s; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.19s; }
+.rise-4 { animation-delay: 0.26s; }
+.rise-5 { animation-delay: 0.33s; }
+
+/* Flecha que se desliza en hover (usar .group en el padre) */
+.arrow-slide {
+  transition: transform 0.25s var(--ease-out);
+}
+.group:hover .arrow-slide {
+  transform: translateX(4px);
+}
+
+/* Skeleton de carga */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    color-mix(in srgb, var(--surface-2) 50%, var(--surface)) 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .skeleton {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--primary) 25%, transparent);
+  background: color-mix(in srgb, var(--text) 18%, transparent);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--primary) 45%, transparent);
+  background: color-mix(in srgb, var(--primary) 55%, transparent);
 }

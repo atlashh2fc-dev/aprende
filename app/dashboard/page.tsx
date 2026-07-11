@@ -6,7 +6,7 @@ import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
-import type { Curso, Inscripcion } from "@/lib/supabase/database.types";
+import type { Curso } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,10 @@ export default async function DashboardPage() {
     <AppShell user={user}>
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
         {/* Bienvenida */}
-        <div className="mb-8">
-          <p className="eyebrow" style={{ color: "var(--text-faint)" }}>{ROLE_LABEL[user.rol]}</p>
-          <h1 className="mt-1 font-serif-brand" style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 700, color: "var(--text)" }}>
+        <div className="animate-rise mb-8">
+          <p className="eyebrow" style={{ color: "var(--primary)" }}>{ROLE_LABEL[user.rol]}</p>
+          <h1 className="mt-1 font-serif-brand tracking-tight"
+            style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 700, color: "var(--text)" }}>
             Hola, {displayName(user)}.
           </h1>
         </div>
@@ -61,21 +62,22 @@ async function AlumnoView({ userId }: { userId: string }) {
   if (inscritos === 0 && completados === 0) {
     return (
       <div className="flex flex-col gap-5">
-        <div className="card relative overflow-hidden p-8 sm:p-11">
+        <div className="card animate-rise rise-2 relative overflow-hidden p-8 sm:p-11" style={{ boxShadow: "var(--shadow-md)" }}>
           <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full"
-            style={{ background: "radial-gradient(circle, var(--primary-glow) 0%, transparent 70%)" }} />
+            style={{ background: "radial-gradient(circle, var(--primary-dim) 0%, transparent 70%)" }} />
           <div className="relative max-w-lg">
-            <span className="eyebrow inline-flex items-center gap-2" style={{ color: "var(--primary-light)" }}>
+            <span className="eyebrow inline-flex items-center gap-2" style={{ color: "var(--primary)" }}>
               <Compass className="h-4 w-4" /> Comienza aquí
             </span>
-            <h2 className="mt-3 font-serif-brand" style={{ fontSize: "clamp(1.7rem,4vw,2.6rem)", fontWeight: 700, color: "var(--text)", lineHeight: 1.05 }}>
+            <h2 className="mt-3 font-serif-brand tracking-tight"
+              style={{ fontSize: "clamp(1.7rem,4vw,2.6rem)", fontWeight: 700, color: "var(--text)", lineHeight: 1.05 }}>
               Explora tu primer <span className="text-gradient italic">curso</span>.
             </h2>
             <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
               Aún no estás inscrito en ningún curso. Descubre el catálogo y empieza a aprender.
             </p>
-            <Link href="/explorar" className="btn-primary mt-7 inline-flex items-center gap-2.5 rounded-lg px-7 py-3.5 text-xs">
-              Explorar cursos <ArrowRight className="h-4 w-4" />
+            <Link href="/explorar" className="btn-primary group mt-7 inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-xs">
+              Explorar cursos <ArrowRight className="arrow-slide h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -85,27 +87,30 @@ async function AlumnoView({ userId }: { userId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={BookOpen} label="Cursos activos" value={inscritos} color="var(--accent)" />
-        <StatCard icon={Trophy} label="Completados" value={completados} color="var(--primary)" />
-        <StatCard icon={Clock} label="En progreso" value={cursos.length} color="#4ade80" />
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
+        <StatCard icon={BookOpen} label="Cursos activos" value={inscritos} color="var(--primary)" />
+        <StatCard icon={Trophy} label="Completados" value={completados} color="var(--accent)" />
+        <StatCard icon={Clock} label="En progreso" value={cursos.length} color="#d97706" />
       </div>
-      <div>
+      <div className="animate-rise rise-2">
         <div className="mb-4 flex items-center justify-between">
           <SectionTitle>Continuar aprendiendo</SectionTitle>
-          <Link href="/mis-cursos" className="btn-ghost rounded-lg px-3.5 py-2 text-xs">Ver todos</Link>
+          <Link href="/mis-cursos" className="btn-ghost rounded-xl px-4 py-2 text-xs">Ver todos</Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cursos.slice(0, 6).map((c) => (
-            <Link key={c.slug} href={`/cursos/${c.slug}`} className="card-glass overflow-hidden">
-              <div className="aspect-[16/9] w-full" style={{ background: c.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), color-mix(in srgb, var(--accent) 18%, transparent))" }}>
+            <Link key={c.slug} href={`/cursos/${c.slug}`} className="card-glass group overflow-hidden">
+              <div className="aspect-[16/9] w-full overflow-hidden"
+                style={{ background: c.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))" }}>
                 {c.imagen_url && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.imagen_url} alt={c.titulo} className="h-full w-full object-cover" />
+                  <img src={c.imagen_url} alt={c.titulo}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 )}
               </div>
-              <div className="p-4">
+              <div className="flex items-center justify-between gap-2 p-4">
                 <h4 className="line-clamp-2 text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</h4>
+                <ArrowRight className="arrow-slide h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
               </div>
             </Link>
           ))}
@@ -133,26 +138,30 @@ async function ProfesorView({ userId }: { userId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={BookOpen} label="Mis cursos" value={cursos.length} color="var(--accent)" />
-        <StatCard icon={Users} label="Alumnos inscritos" value={inscritos} color="var(--primary)" />
-        <StatCard icon={GraduationCap} label="Publicados" value={publicados} color="#4ade80" />
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
+        <StatCard icon={BookOpen} label="Mis cursos" value={cursos.length} color="var(--primary)" />
+        <StatCard icon={Users} label="Alumnos inscritos" value={inscritos} color="#d97706" />
+        <StatCard icon={GraduationCap} label="Publicados" value={publicados} color="var(--accent)" />
       </div>
-      <div>
+      <div className="animate-rise rise-2">
         <div className="mb-4 flex items-center justify-between">
           <SectionTitle>Mis cursos</SectionTitle>
-          <Link href="/profesor/cursos" className="btn-ghost rounded-lg px-3.5 py-2 text-xs">Gestionar</Link>
+          <Link href="/profesor/cursos" className="btn-ghost rounded-xl px-4 py-2 text-xs">Gestionar</Link>
         </div>
         {cursos.length === 0 ? (
           <p className="card p-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-            Aún no tienes cursos. Crea el primero desde <Link href="/profesor/cursos" style={{ color: "var(--primary-light)" }}>gestión de cursos</Link>.
+            Aún no tienes cursos. Crea el primero desde{" "}
+            <Link href="/profesor/cursos" className="font-semibold" style={{ color: "var(--primary)" }}>gestión de cursos</Link>.
           </p>
         ) : (
           <div className="flex flex-col gap-3">
             {cursos.map((c) => (
-              <div key={c.id} className="card flex items-center justify-between gap-4 px-5 py-4">
+              <div key={c.id}
+                className="card flex items-center justify-between gap-4 px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
                 <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</span>
-                <span className="badge rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold capitalize">{c.estado}</span>
+                <span className={`${c.estado === "publicado" ? "badge-accent" : "badge"} rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold capitalize`}>
+                  {c.estado}
+                </span>
               </div>
             ))}
           </div>
@@ -179,20 +188,21 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
   return (
     <div className="flex flex-col gap-6">
       {!institucionId && (
-        <p className="card p-6 text-sm" style={{ color: "var(--text-muted)" }}>
+        <p className="card animate-rise p-6 text-sm" style={{ color: "var(--text-muted)" }}>
           Tu cuenta de supervisor aún no está asignada a una institución. Un administrador debe asignártela.
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={Layers} label="Cursos de la institución" value={cursos} color="var(--accent)" />
-        <StatCard icon={Users} label="Alumnos" value={alumnos} color="var(--primary)" />
-        <StatCard icon={GraduationCap} label="Institución" value={institucion} color="#4ade80" />
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
+        <StatCard icon={Layers} label="Cursos de la institución" value={cursos} color="var(--primary)" />
+        <StatCard icon={Users} label="Alumnos" value={alumnos} color="#d97706" />
+        <StatCard icon={GraduationCap} label="Institución" value={institucion} color="var(--accent)" />
       </div>
-      <div>
+      <div className="animate-rise rise-2">
         <SectionTitle>Supervisión</SectionTitle>
-        <p className="mt-3 card p-6 text-sm" style={{ color: "var(--text-muted)" }}>
+        <p className="card mt-3 p-6 text-sm" style={{ color: "var(--text-muted)" }}>
           Vista de solo lectura del avance de <strong style={{ color: "var(--text)" }}>{institucion}</strong>.
-          El detalle por alumno y curso se gestiona en <Link href="/supervisor" style={{ color: "var(--primary-light)" }}>Mi institución</Link>.
+          El detalle por alumno y curso se gestiona en{" "}
+          <Link href="/supervisor" className="font-semibold" style={{ color: "var(--primary)" }}>Mi institución</Link>.
         </p>
       </div>
     </div>
@@ -220,21 +230,23 @@ async function AdminView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={BookOpen} label="Cursos" value={cursos} color="var(--accent)" />
-        <StatCard icon={Users} label="Alumnos" value={alumnos} color="var(--primary)" />
-        <StatCard icon={GraduationCap} label="Profesores" value={profesores} color="#4ade80" />
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
+        <StatCard icon={BookOpen} label="Cursos" value={cursos} color="var(--primary)" />
+        <StatCard icon={Users} label="Alumnos" value={alumnos} color="#d97706" />
+        <StatCard icon={GraduationCap} label="Profesores" value={profesores} color="var(--accent)" />
       </div>
-      <div>
+      <div className="animate-rise rise-2">
         <SectionTitle>Gestión</SectionTitle>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="card-glass p-6">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl"
-                style={{ background: "var(--primary-dim)", color: "var(--primary-light)" }}>
+            <Link key={l.href} href={l.href} className="card-glass group p-6">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+                style={{ background: "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))", color: "var(--primary)" }}>
                 <l.icon className="h-5 w-5" />
               </span>
-              <h4 className="mt-4 text-sm font-semibold" style={{ color: "var(--text)" }}>{l.title}</h4>
+              <h4 className="mt-4 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--text)" }}>
+                {l.title} <ArrowRight className="arrow-slide h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+              </h4>
               <p className="mt-1 text-xs" style={{ color: "var(--text-faint)" }}>{l.desc}</p>
             </Link>
           ))}
