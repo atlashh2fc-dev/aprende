@@ -19,11 +19,27 @@ function GoogleIcon() {
   );
 }
 
+type Mode = "login" | "signup";
+
 function LoginInner() {
   const params = useSearchParams();
   const redirect = params.get("redirect") ?? "/dashboard";
+  const [mode, setMode] = useState<Mode>(params.get("mode") === "signup" ? "signup" : "login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const copy = {
+    login: {
+      title: `Entra a ${brand.name}`,
+      subtitle: "Accede con tu cuenta de Google para continuar.",
+      cta: "Continuar con Google",
+    },
+    signup: {
+      title: `Crea tu cuenta en ${brand.name}`,
+      subtitle: "Regístrate con Google en segundos y empieza a aprender.",
+      cta: "Registrarse con Google",
+    },
+  }[mode];
 
   async function signInWithGoogle() {
     setError(null);
@@ -55,16 +71,31 @@ function LoginInner() {
         <div className="mb-8 flex justify-center"><BrandMark /></div>
 
         <div className="card p-8" style={{ boxShadow: "var(--shadow-lg)" }}>
+          {/* Pestañas: iniciar sesión / crear cuenta */}
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl p-1"
+            style={{ background: "var(--surface-muted, var(--surface))", border: "1px solid var(--border)" }}>
+            {([["login", "Iniciar sesión"], ["signup", "Crear cuenta"]] as const).map(([value, label]) => (
+              <button key={value} type="button" onClick={() => { setMode(value); setError(null); }}
+                aria-pressed={mode === value}
+                className="rounded-lg px-3 py-2 text-sm font-semibold transition-all"
+                style={mode === value
+                  ? { background: "var(--surface)", color: "var(--text)", boxShadow: "var(--shadow-sm)" }
+                  : { background: "transparent", color: "var(--text-muted)" }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           <div className="mb-6 text-center">
             <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl"
               style={{ background: "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))", color: "var(--primary)" }}>
               <GraduationCap className="h-6 w-6" />
             </span>
             <h1 className="font-serif-brand text-2xl font-bold tracking-tight" style={{ color: "var(--text)" }}>
-              Entra a {brand.name}
+              {copy.title}
             </h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              Accede con tu cuenta de Google para continuar.
+              {copy.subtitle}
             </p>
           </div>
 
@@ -77,8 +108,26 @@ function LoginInner() {
               boxShadow: "var(--shadow-sm)",
             }}>
             <GoogleIcon />
-            {loading ? "Redirigiendo…" : "Continuar con Google"}
+            {loading ? "Redirigiendo…" : copy.cta}
           </button>
+
+          <p className="mt-4 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+            {mode === "login" ? (
+              <>¿No tienes cuenta?{" "}
+                <button type="button" onClick={() => { setMode("signup"); setError(null); }}
+                  className="font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--primary)" }}>
+                  Crea una
+                </button>
+              </>
+            ) : (
+              <>¿Ya tienes cuenta?{" "}
+                <button type="button" onClick={() => { setMode("login"); setError(null); }}
+                  className="font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--primary)" }}>
+                  Inicia sesión
+                </button>
+              </>
+            )}
+          </p>
 
           {error && (
             <p className="mt-4 rounded-lg px-3 py-2 text-xs"
