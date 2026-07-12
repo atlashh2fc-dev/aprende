@@ -97,9 +97,13 @@ export function CursoForm({ mode, curso }: { mode: "create" | "edit"; curso?: Cu
 
     setSaving(true);
     if (mode === "create") {
+      // Asignar el curso al usuario actual como profesor/dueño (satisface RLS
+      // tanto para admin como para profesor y evita cursos sin dueño).
+      const { data: { user } } = await supabase.auth.getUser();
+      const createPayload = { ...payload, profesor_id: user?.id ?? null };
       const { data, error } = await supabase
         .from("cursos")
-        .insert(payload as never)
+        .insert(createPayload as never)
         .select("id")
         .single();
       if (error) { setSaving(false); setError(friendly(error.message)); return; }

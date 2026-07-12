@@ -5,8 +5,9 @@
  * Escribe directo a Supabase; RLS permite la escritura por ser admin.
  */
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, Video, FileText, HelpCircle, GripVertical } from "lucide-react";
+import { Loader2, Plus, Trash2, Video, FileText, HelpCircle, GripVertical, ListChecks } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Leccion, LeccionTipo } from "@/lib/supabase/database.types";
 
@@ -91,6 +92,13 @@ export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecc
                       {T.label}{l.duracion_min ? ` · ${l.duracion_min} min` : ""}
                     </p>
                   </div>
+                  {l.tipo === "quiz" && (
+                    <Link href={`/admin/cursos/${cursoId}/leccion/${l.id}/quiz`}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                      style={{ background: "var(--primary-dim)", color: "var(--primary)" }}>
+                      <ListChecks className="h-3.5 w-3.5" /> Preguntas
+                    </Link>
+                  )}
                   <button onClick={() => removeLeccion(l.id)} disabled={busy === l.id}
                     className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[color:var(--surface-2)] disabled:opacity-50"
                     style={{ color: "#dc2626" }} aria-label="Eliminar lección">
