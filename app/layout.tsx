@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Inter, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { brand, brandThemeCss } from "@/lib/brand";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
-const cormorant = Cormorant_Garamond({
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
+// Titulares: grotesca geométrica bold (identidad Geimser). Reutiliza la
+// variable --font-serif para no tocar los componentes que ya la usan.
+const display = Hanken_Grotesk({
+  weight: ["500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-serif",
   display: "swap",
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style dangerouslySetInnerHTML={{ __html: brandThemeCss() }} />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={`${inter.variable} ${cormorant.variable} min-h-screen`}>
+      <body className={`${inter.variable} ${display.variable} min-h-screen`}>
         {children}
       </body>
     </html>

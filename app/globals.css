@@ -8,22 +8,22 @@
 ────────────────────────────────────────────────────────────── */
 
 :root {
-  --bg: var(--brand-bg, #f6f7fb);
+  --bg: var(--brand-bg, #f4f6f8);
   --surface: var(--brand-surface, #ffffff);
-  --surface-2: var(--brand-surface-2, #eef0f7);
-  --border: var(--brand-border, rgba(15, 23, 42, 0.08));
-  --border-strong: var(--brand-border-strong, rgba(15, 23, 42, 0.16));
-  --primary: var(--brand-primary, #4f46e5);
-  --primary-light: var(--brand-primary-light, #6366f1);
-  --on-primary: var(--brand-on-primary, #ffffff);
-  --primary-dim: var(--brand-primary-dim, rgba(79, 70, 229, 0.1));
-  --primary-glow: var(--brand-primary-glow, rgba(79, 70, 229, 0.24));
-  --accent: var(--brand-accent, #059669);
-  --accent-dim: var(--brand-accent-dim, rgba(5, 150, 105, 0.12));
-  --text: var(--brand-text, #0f172a);
-  --text-muted: var(--brand-text-muted, rgba(15, 23, 42, 0.64));
-  --text-faint: var(--brand-text-faint, rgba(15, 23, 42, 0.42));
-  --shadow-color: var(--brand-shadow, #334155);
+  --surface-2: var(--brand-surface-2, #eaeef2);
+  --border: var(--brand-border, rgba(13, 20, 32, 0.09));
+  --border-strong: var(--brand-border-strong, rgba(13, 20, 32, 0.16));
+  --primary: var(--brand-primary, #1E9FDC);
+  --primary-light: var(--brand-primary-light, #56BCEB);
+  --on-primary: var(--brand-on-primary, #08131f);
+  --primary-dim: var(--brand-primary-dim, rgba(30, 159, 220, 0.1));
+  --primary-glow: var(--brand-primary-glow, rgba(30, 159, 220, 0.24));
+  --accent: var(--brand-accent, #1FA877);
+  --accent-dim: var(--brand-accent-dim, rgba(31, 168, 119, 0.12));
+  --text: var(--brand-text, #0f1524);
+  --text-muted: var(--brand-text-muted, rgba(15, 21, 36, 0.62));
+  --text-faint: var(--brand-text-faint, rgba(15, 21, 36, 0.40));
+  --shadow-color: var(--brand-shadow, #0f1524);
   --radius: 16px;
 
   --shadow-xs: 0 1px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent);
@@ -80,7 +80,9 @@ body {
 
 /* ── Tipografía utilitaria ── */
 .font-serif-brand {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), var(--font-sans), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.022em;
 }
 .eyebrow {
   font-size: 0.7rem;
