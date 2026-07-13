@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { AdminCharts } from "@/components/admin/AdminCharts";
 import { ChartCard, CursosBar, ActividadArea } from "@/components/Charts";
+import { LearnerReport, type LearnerReportRow } from "@/components/LearnerReport";
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
@@ -57,18 +58,37 @@ export default async function DashboardPage() {
 async function AlumnoView({ userId }: { userId: string }) {
   const supabase = await createClient();
   let inscritos = 0, completados = 0;
-  let cursos: { slug: string; titulo: string; imagen_url: string | null }[] = [];
+  let cursos: { id: string; slug: string; titulo: string; imagen_url: string | null; avance: number; nextHref: string }[] = [];
 
   if (supabase) {
     const { data } = await supabase
       .from("inscripciones")
-      .select("estado, cursos(slug, titulo, imagen_url)")
+      .select("estado, cursos(id, slug, titulo, imagen_url)")
       .eq("alumno_id", userId)
       .order("fecha_inscripcion", { ascending: false });
-    const rows = (data as unknown as { estado: string; cursos: { slug: string; titulo: string; imagen_url: string | null } | null }[] | null) ?? [];
+    const rows = (data as unknown as { estado: string; cursos: { id: string; slug: string; titulo: string; imagen_url: string | null } | null }[] | null) ?? [];
     inscritos = rows.filter((r) => r.estado === "activa").length;
     completados = rows.filter((r) => r.estado === "completada").length;
-    cursos = rows.map((r) => r.cursos).filter(Boolean) as typeof cursos;
+    const base = rows.map((r) => r.cursos).filter(Boolean) as { id: string; slug: string; titulo: string; imagen_url: string | null }[];
+    if (base.length) {
+      const ids = base.map((c) => c.id);
+      const [{ data: leccionesRaw }, { data: progresoRaw }] = await Promise.all([
+        supabase.from("lecciones").select("id, curso_id, orden").in("curso_id", ids).order("orden"),
+        supabase.from("progreso_lecciones").select("curso_id, leccion_id, completada").eq("alumno_id", userId).in("curso_id", ids),
+      ]);
+      const lecciones = (leccionesRaw as { id: string; curso_id: string; orden: number }[] | null) ?? [];
+      const progreso = (progresoRaw as { curso_id: string; leccion_id: string; completada: boolean }[] | null) ?? [];
+      cursos = base.map((curso) => {
+        const delCurso = lecciones.filter((leccion) => leccion.curso_id === curso.id);
+        const hechas = new Set(progreso.filter((item) => item.curso_id === curso.id && item.completada).map((item) => item.leccion_id));
+        const siguiente = delCurso.find((leccion) => !hechas.has(leccion.id)) ?? delCurso[0];
+        return {
+          ...curso,
+          avance: delCurso.length ? Math.round((hechas.size / delCurso.length) * 100) : 0,
+          nextHref: siguiente ? `/aprender/${siguiente.id}` : `/cursos/${curso.slug}`,
+        };
+      });
+    }
   }
 
   if (inscritos === 0 && completados === 0) {
@@ -111,7 +131,7 @@ async function AlumnoView({ userId }: { userId: string }) {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cursos.slice(0, 6).map((c) => (
-            <Link key={c.slug} href={`/cursos/${c.slug}`} className="card-glass group overflow-hidden">
+            <Link key={c.slug} href={c.nextHref} className="card-glass group overflow-hidden">
               <div className="aspect-[16/9] w-full overflow-hidden"
                 style={{ background: c.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))" }}>
                 {c.imagen_url && (
@@ -120,9 +140,15 @@ async function AlumnoView({ userId }: { userId: string }) {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 p-4">
-                <h4 className="line-clamp-2 text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</h4>
-                <ArrowRight className="arrow-slide h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
+              <div className="p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="line-clamp-2 text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</h4>
+                  <ArrowRight className="arrow-slide h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="progress-track h-1.5 flex-1"><div className="progress-bar h-full" style={{ width: `${c.avance}%` }} /></div>
+                  <span className="text-[0.68rem] font-semibold tabular-nums" style={{ color: "var(--text-faint)" }}>{c.avance}%</span>
+                </div>
               </div>
             </Link>
           ))}
@@ -143,16 +169,17 @@ async function ProfesorView({ userId }: { userId: string }) {
   const cursos = (cursosRaw as Pick<Curso, "id" | "slug" | "titulo" | "estado">[] | null) ?? [];
   const ids = cursos.map((c) => c.id);
 
-  let insc: { curso_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
+  let insc: { curso_id: string; alumno_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
   let lecciones: { curso_id: string }[] = [];
-  let prog: { curso_id: string; completada: boolean }[] = [];
+  let prog: { curso_id: string; alumno_id: string; completada: boolean; ultima_vista: string | null }[] = [];
   let quizzes: { id: string; curso_id: string }[] = [];
   let intentos: { quiz_id: string; aprobado: boolean }[] = [];
+  let perfiles: { id: string; nombre: string | null; apellido: string | null; email: string }[] = [];
   if (ids.length) {
     const [iR, lR, pR, qR] = await Promise.all([
-      supabase.from("inscripciones").select("curso_id, estado, fecha_inscripcion").in("curso_id", ids),
+      supabase.from("inscripciones").select("curso_id, alumno_id, estado, fecha_inscripcion").in("curso_id", ids),
       supabase.from("lecciones").select("curso_id").in("curso_id", ids),
-      supabase.from("progreso_lecciones").select("curso_id, completada").in("curso_id", ids),
+      supabase.from("progreso_lecciones").select("curso_id, alumno_id, completada, ultima_vista").in("curso_id", ids),
       supabase.from("quizzes").select("id, curso_id").in("curso_id", ids),
     ]);
     insc = (iR.data as typeof insc | null) ?? [];
@@ -162,6 +189,10 @@ async function ProfesorView({ userId }: { userId: string }) {
     if (quizzes.length) {
       const { data: intR } = await supabase.from("quiz_intentos").select("quiz_id, aprobado").in("quiz_id", quizzes.map((q) => q.id));
       intentos = (intR as typeof intentos | null) ?? [];
+    }
+    if (insc.length) {
+      const { data: perfilesRaw } = await supabase.from("profiles").select("id, nombre, apellido, email").in("id", [...new Set(insc.map((i) => i.alumno_id))]);
+      perfiles = (perfilesRaw as typeof perfiles | null) ?? [];
     }
   }
 
@@ -180,6 +211,7 @@ async function ProfesorView({ userId }: { userId: string }) {
     };
   }).sort((a, b) => b.inscritos - a.inscritos);
   const actividadChart = weeklyBuckets(insc.map((i) => i.fecha_inscripcion));
+  const reporteAlumnos = buildLearnerReport({ inscripciones: insc, progreso: prog, perfiles, cursos, leccionesPorCurso });
 
   return (
     <div className="flex flex-col gap-6">
@@ -220,6 +252,9 @@ async function ProfesorView({ userId }: { userId: string }) {
               ))}
             </div>
           </div>
+          <div className="animate-rise rise-4">
+            <LearnerReport rows={reporteAlumnos} title="Seguimiento por alumno" />
+          </div>
         </>
       )}
     </div>
@@ -238,26 +273,34 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
   }
   if (!supabase) return null;
 
-  const [{ data: instRaw }, { count: alumnosCount }, { data: cursosRaw }] = await Promise.all([
+  const [{ data: instRaw }, { count: alumnosCount }, { data: cursosRaw }, { data: perfilesRaw }] = await Promise.all([
     supabase.from("instituciones").select("nombre").eq("id", institucionId).single(),
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("institucion_id", institucionId).eq("rol", "alumno"),
     supabase.from("cursos").select("id, titulo, estado").eq("institucion_id", institucionId).order("created_at", { ascending: false }),
+    supabase.from("profiles").select("id, nombre, apellido, email").eq("institucion_id", institucionId).eq("rol", "alumno"),
   ]);
   const institucion = (instRaw as { nombre: string } | null)?.nombre ?? "tu institución";
   const alumnos = alumnosCount ?? 0;
   const cursos = (cursosRaw as Pick<Curso, "id" | "titulo" | "estado">[] | null) ?? [];
+  const perfiles = (perfilesRaw as { id: string; nombre: string | null; apellido: string | null; email: string }[] | null) ?? [];
   const ids = cursos.map((c) => c.id);
 
-  let insc: { curso_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
+  let insc: { curso_id: string; alumno_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
+  let lecciones: { curso_id: string }[] = [];
+  let prog: { curso_id: string; alumno_id: string; completada: boolean; ultima_vista: string | null }[] = [];
   let quizzes: { id: string; curso_id: string }[] = [];
   let intentos: { quiz_id: string; aprobado: boolean }[] = [];
   if (ids.length) {
-    const [iR, qR] = await Promise.all([
-      supabase.from("inscripciones").select("curso_id, estado, fecha_inscripcion").in("curso_id", ids),
+    const [iR, qR, lR, pR] = await Promise.all([
+      supabase.from("inscripciones").select("curso_id, alumno_id, estado, fecha_inscripcion").in("curso_id", ids),
       supabase.from("quizzes").select("id, curso_id").in("curso_id", ids),
+      supabase.from("lecciones").select("curso_id").in("curso_id", ids),
+      supabase.from("progreso_lecciones").select("curso_id, alumno_id, completada, ultima_vista").in("curso_id", ids),
     ]);
     insc = (iR.data as typeof insc | null) ?? [];
     quizzes = (qR.data as typeof quizzes | null) ?? [];
+    lecciones = (lR.data as typeof lecciones | null) ?? [];
+    prog = (pR.data as typeof prog | null) ?? [];
     if (quizzes.length) {
       const { data: intR } = await supabase.from("quiz_intentos").select("quiz_id, aprobado").in("quiz_id", quizzes.map((q) => q.id));
       intentos = (intR as typeof intentos | null) ?? [];
@@ -276,6 +319,9 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
     };
   }).sort((a, b) => b.inscritos - a.inscritos);
   const actividadChart = weeklyBuckets(insc.map((i) => i.fecha_inscripcion));
+  const leccionesPorCurso = new Map<string, number>();
+  lecciones.forEach((leccion) => leccionesPorCurso.set(leccion.curso_id, (leccionesPorCurso.get(leccion.curso_id) ?? 0) + 1));
+  const reporteAlumnos = buildLearnerReport({ inscripciones: insc, progreso: prog, perfiles, cursos, leccionesPorCurso });
 
   return (
     <div className="flex flex-col gap-6">
@@ -304,6 +350,9 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
           <div className="animate-rise rise-3">
             <ChartCard title="Inscritos y aprobación por curso"><CursosBar data={cursosChart} /></ChartCard>
           </div>
+          <div className="animate-rise rise-4">
+            <LearnerReport rows={reporteAlumnos} title="Seguimiento de la institución" />
+          </div>
         </>
       )}
     </div>
@@ -313,6 +362,39 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
 /* ── ADMIN ──────────────────────────────────────────────── */
 function pct(part: number, whole: number): number {
   return whole > 0 ? Math.round((part / whole) * 100) : 0;
+}
+
+function buildLearnerReport({
+  inscripciones, progreso, perfiles, cursos, leccionesPorCurso,
+}: {
+  inscripciones: { curso_id: string; alumno_id: string; estado: string; fecha_inscripcion: string | null }[];
+  progreso: { curso_id: string; alumno_id: string; completada: boolean; ultima_vista: string | null }[];
+  perfiles: { id: string; nombre: string | null; apellido: string | null; email: string }[];
+  cursos: { id: string; titulo: string }[];
+  leccionesPorCurso: Map<string, number>;
+}): LearnerReportRow[] {
+  const profileById = new Map(perfiles.map((perfil) => [perfil.id, perfil]));
+  const courseById = new Map(cursos.map((curso) => [curso.id, curso]));
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return inscripciones.map((inscripcion) => {
+    const perfil = profileById.get(inscripcion.alumno_id);
+    const nombre = [perfil?.nombre, perfil?.apellido].filter(Boolean).join(" ") || perfil?.email || "Alumno";
+    const filas = progreso.filter((fila) => fila.alumno_id === inscripcion.alumno_id && fila.curso_id === inscripcion.curso_id);
+    const avance = pct(filas.filter((fila) => fila.completada).length, leccionesPorCurso.get(inscripcion.curso_id) ?? 0);
+    const fechas = [inscripcion.fecha_inscripcion, ...filas.map((fila) => fila.ultima_vista)].filter((fecha): fecha is string => Boolean(fecha));
+    const ultima = fechas.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+    const estado: LearnerReportRow["estado"] = inscripcion.estado === "completada"
+      ? "Completado"
+      : !ultima || new Date(ultima).getTime() < sevenDaysAgo ? "Inactivo" : "Activo";
+    return {
+      alumno: nombre,
+      email: perfil?.email ?? "Sin email",
+      curso: courseById.get(inscripcion.curso_id)?.titulo ?? "Curso",
+      avance,
+      estado,
+      ultimaActividad: ultima ? new Date(ultima).toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" }) : "Sin actividad",
+    };
+  }).sort((a, b) => (a.estado === "Inactivo" ? -1 : 1) - (b.estado === "Inactivo" ? -1 : 1) || a.alumno.localeCompare(b.alumno));
 }
 
 function weeklyBuckets(dates: (string | null)[], weeks = 8): { semana: string; inscripciones: number }[] {

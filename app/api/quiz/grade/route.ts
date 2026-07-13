@@ -21,9 +21,19 @@ export async function POST(request: Request) {
   const { quizId, respuestas = {} } = body;
   if (!quizId) return NextResponse.json({ error: "missing_quiz" }, { status: 400 });
 
-  const { data: quizRaw } = await admin.from("quizzes").select("id, aprobacion_min").eq("id", quizId).single();
-  const quiz = quizRaw as Pick<Quiz, "id" | "aprobacion_min"> | null;
+  const { data: quizRaw } = await admin.from("quizzes").select("id, curso_id, aprobacion_min").eq("id", quizId).single();
+  const quiz = quizRaw as Pick<Quiz, "id" | "curso_id" | "aprobacion_min"> | null;
   if (!quiz) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  // Un alumno solo puede rendir evaluaciones de cursos en los que está inscrito.
+  // Esta comprobación usa el cliente de sesión para respetar las reglas RLS.
+  const { data: inscripcion } = await supabase
+    .from("inscripciones")
+    .select("id")
+    .eq("alumno_id", user.id)
+    .eq("curso_id", quiz.curso_id)
+    .maybeSingle();
+  if (!inscripcion) return NextResponse.json({ error: "not_enrolled" }, { status: 403 });
 
   const { data: preguntasRaw } = await admin.from("quiz_preguntas").select("id").eq("quiz_id", quizId);
   const preguntas = (preguntasRaw as Pick<QuizPregunta, "id">[] | null) ?? [];
@@ -39,6 +49,11 @@ export async function POST(request: Request) {
   for (const o of opciones) {
     if (!correctasPorPregunta.has(o.pregunta_id)) correctasPorPregunta.set(o.pregunta_id, new Set());
     if (o.es_correcta) correctasPorPregunta.get(o.pregunta_id)!.add(o.id);
+  }
+
+  // No se debe calificar una configuración incompleta como si fuese un 0% del alumno.
+  if (preguntas.some((p) => (correctasPorPregunta.get(p.id)?.size ?? 0) === 0)) {
+    return NextResponse.json({ error: "invalid_quiz_config" }, { status: 422 });
   }
 
   let correctas = 0;

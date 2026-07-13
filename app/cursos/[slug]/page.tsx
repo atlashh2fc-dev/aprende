@@ -8,7 +8,7 @@ import { AppShell } from "@/components/AppShell";
 import { EnrollButton } from "@/components/EnrollButton";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Curso, Leccion } from "@/lib/supabase/database.types";
+import type { Curso, Leccion, Modulo } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -30,13 +30,33 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
   const curso = cursoRaw as Pick<Curso, "id" | "slug" | "titulo" | "descripcion" | "descripcion_corta" | "imagen_url" | "nivel" | "duracion_horas" | "categoria"> | null;
   if (!curso) notFound();
 
-  const [{ data: leccionesRaw }, { data: insRaw }] = await Promise.all([
-    supabase.from("lecciones").select("id, titulo, tipo, duracion_min, orden").eq("curso_id", curso.id).order("orden"),
+  const [{ data: leccionesRaw }, { data: modulosRaw }, { data: insRaw }, { data: progresoRaw }] = await Promise.all([
+    supabase.from("lecciones").select("id, titulo, tipo, duracion_min, orden, modulo_id").eq("curso_id", curso.id).order("orden"),
+    supabase.from("modulos").select("id, titulo, orden").eq("curso_id", curso.id).order("orden"),
     supabase.from("inscripciones").select("id").eq("curso_id", curso.id).eq("alumno_id", user.id).maybeSingle(),
+    supabase.from("progreso_lecciones").select("leccion_id, completada").eq("curso_id", curso.id).eq("alumno_id", user.id),
   ]);
-  const lecciones = (leccionesRaw as Pick<Leccion, "id" | "titulo" | "tipo" | "duracion_min" | "orden">[] | null) ?? [];
+  const lecciones = (leccionesRaw as Pick<Leccion, "id" | "titulo" | "tipo" | "duracion_min" | "orden" | "modulo_id">[] | null) ?? [];
+  const modulos = (modulosRaw as Pick<Modulo, "id" | "titulo" | "orden">[] | null) ?? [];
   const inscrito = !!insRaw;
   const totalMin = lecciones.reduce((acc, l) => acc + (l.duracion_min ?? 0), 0);
+  const completadas = new Set(
+    ((progresoRaw as { leccion_id: string; completada: boolean }[] | null) ?? [])
+      .filter((p) => p.completada)
+      .map((p) => p.leccion_id),
+  );
+  const avance = lecciones.length ? Math.round((completadas.size / lecciones.length) * 100) : 0;
+  const siguientePendiente = lecciones.find((leccion) => !completadas.has(leccion.id)) ?? lecciones[0];
+  const bloques = [
+    ...modulos.map((modulo) => ({
+      id: modulo.id,
+      titulo: modulo.titulo,
+      lecciones: lecciones.filter((leccion) => leccion.modulo_id === modulo.id),
+    })).filter((bloque) => bloque.lecciones.length),
+    ...(lecciones.some((leccion) => !leccion.modulo_id)
+      ? [{ id: "sin-modulo", titulo: modulos.length ? "Contenido adicional" : "Contenido del curso", lecciones: lecciones.filter((leccion) => !leccion.modulo_id) }]
+      : []),
+  ];
 
   return (
     <AppShell user={user}>
@@ -83,14 +103,26 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
             <h2 className="mt-10 mb-4 flex items-center gap-2 font-serif-brand text-xl font-bold" style={{ color: "var(--text)" }}>
               <Layers className="h-5 w-5" style={{ color: "var(--primary)" }} /> Contenido del curso
             </h2>
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-6">
               {lecciones.length === 0 && (
                 <p className="card p-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
                   Este curso aún no tiene lecciones.
                 </p>
               )}
-              {lecciones.map((l, i) => {
+              {bloques.map((bloque, bloqueIndex) => (
+                <section key={bloque.id} aria-labelledby={`modulo-${bloque.id}`}>
+                  {(bloques.length > 1 || modulos.length > 0) && (
+                    <div className="mb-2 flex items-center justify-between gap-3 px-1">
+                      <h3 id={`modulo-${bloque.id}`} className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                        <span style={{ color: "var(--primary)" }}>{String(bloqueIndex + 1).padStart(2, "0")}</span> · {bloque.titulo}
+                      </h3>
+                      <span className="text-xs" style={{ color: "var(--text-faint)" }}>{bloque.lecciones.length} lecciones</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2.5">
+                  {bloque.lecciones.map((l) => {
                 const Icon = TIPO_ICON[l.tipo] ?? FileText;
+                const i = lecciones.findIndex((leccion) => leccion.id === l.id);
                 const row = (
                   <div className={`card flex items-center gap-4 px-5 py-4 ${inscrito ? "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]" : ""}`}>
                     <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-faint)" }}>
@@ -106,6 +138,7 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                         {TIPO_LABEL[l.tipo] ?? "Lección"}
                       </span>
                     </div>
+                    {completadas.has(l.id) && <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: "var(--accent)" }} />}
                     {!!l.duracion_min && (
                       <span className="text-xs tabular-nums" style={{ color: "var(--text-faint)" }}>{l.duracion_min} min</span>
                     )}
@@ -115,7 +148,10 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                 return inscrito
                   ? <Link key={l.id} href={`/aprender/${l.id}`}>{row}</Link>
                   : <div key={l.id} style={{ opacity: 0.72 }}>{row}</div>;
-              })}
+                  })}
+                  </div>
+                </section>
+              ))}
             </div>
           </div>
 
@@ -128,6 +164,12 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                   <Layers className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
                   {lecciones.length} lecciones
                 </li>
+                {modulos.length > 0 && (
+                  <li className="flex items-center gap-2.5">
+                    <Layers className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
+                    {modulos.length} {modulos.length === 1 ? "módulo" : "módulos"}
+                  </li>
+                )}
                 {totalMin > 0 && (
                   <li className="flex items-center gap-2.5">
                     <Clock className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
@@ -150,13 +192,21 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
               <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--border)" }}>
                 {inscrito ? (
                   <div className="flex flex-col gap-3">
+                    {lecciones.length > 0 && (
+                      <div>
+                        <div className="mb-1.5 flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
+                          <span>Tu avance</span><span className="tabular-nums">{avance}%</span>
+                        </div>
+                        <div className="progress-track h-1.5"><div className="progress-bar h-full" style={{ width: `${avance}%` }} /></div>
+                      </div>
+                    )}
                     <span className="badge-accent inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold">
                       <CheckCircle2 className="h-4 w-4" /> Ya estás inscrito
                     </span>
-                    {lecciones[0] && (
-                      <Link href={`/aprender/${lecciones[0].id}`}
+                    {siguientePendiente && (
+                      <Link href={`/aprender/${siguientePendiente.id}`}
                         className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-xs">
-                        <PlayCircle className="h-4 w-4" /> Continuar aprendiendo
+                        <PlayCircle className="h-4 w-4" /> {avance === 100 ? "Repasar el curso" : "Continuar aprendiendo"}
                       </Link>
                     )}
                   </div>

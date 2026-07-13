@@ -7,7 +7,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, Video, FileText, HelpCircle, GripVertical, ListChecks } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, Video, FileText, HelpCircle, GripVertical, ListChecks } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Leccion, LeccionTipo } from "@/lib/supabase/database.types";
 
@@ -81,6 +81,22 @@ export function LeccionesManager({ cursoId, lecciones, modulos = [], basePath = 
     router.refresh();
   }
 
+  async function moverLeccion(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    const actual = lecciones[index];
+    const destino = lecciones[targetIndex];
+    if (!actual || !destino) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    setBusy(actual.id); setError(null);
+    const first = await supabase.from("lecciones").update({ orden: destino.orden } as never).eq("id", actual.id);
+    if (first.error) { setBusy(null); setError(first.error.message); return; }
+    const second = await supabase.from("lecciones").update({ orden: actual.orden } as never).eq("id", destino.id);
+    setBusy(null);
+    if (second.error) { setError(second.error.message); return; }
+    router.refresh();
+  }
+
   return (
     <div className="grid gap-5">
       {/* Lista */}
@@ -91,7 +107,7 @@ export function LeccionesManager({ cursoId, lecciones, modulos = [], basePath = 
           </p>
         ) : (
           <ul className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {lecciones.map((l) => {
+            {lecciones.map((l, index) => {
               const T = TIPOS.find((t) => t.value === l.tipo) ?? TIPOS[0];
               return (
                 <li key={l.id} className="flex items-center gap-3 px-3 py-3">
@@ -105,6 +121,16 @@ export function LeccionesManager({ cursoId, lecciones, modulos = [], basePath = 
                     <p className="text-xs" style={{ color: "var(--text-faint)" }}>
                       {T.label}{l.duracion_min ? ` · ${l.duracion_min} min` : ""}
                     </p>
+                  </div>
+                  <div className="hidden items-center sm:flex">
+                    <button onClick={() => moverLeccion(index, -1)} disabled={index === 0 || busy === l.id}
+                      className="flex h-8 w-7 items-center justify-center rounded-lg disabled:opacity-30" aria-label="Subir lección">
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => moverLeccion(index, 1)} disabled={index === lecciones.length - 1 || busy === l.id}
+                      className="flex h-8 w-7 items-center justify-center rounded-lg disabled:opacity-30" aria-label="Bajar lección">
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                   {modulos.length > 0 && (
                     <select value={l.modulo_id ?? ""} disabled={busy === l.id}

@@ -156,11 +156,16 @@ export function QuizTaker({ quizId, titulo, preguntas }: { quizId: string; titul
         </p>
       )}
 
-      <button onClick={enviar} disabled={loading || contestadas === 0}
+      <button onClick={enviar} disabled={loading || contestadas !== preguntas.length}
         className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm disabled:opacity-50">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         {loading ? "Calificando…" : "Enviar respuestas"}
       </button>
+      {contestadas !== preguntas.length && (
+        <p className="text-center text-xs" style={{ color: "var(--text-faint)" }}>
+          Responde las {preguntas.length - contestadas} {preguntas.length - contestadas === 1 ? "pregunta pendiente" : "preguntas pendientes"} para enviar la evaluación.
+        </p>
+      )}
     </div>
   );
 }

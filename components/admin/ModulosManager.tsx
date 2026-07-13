@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, Layers } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Modulo } from "@/lib/supabase/database.types";
 
@@ -46,6 +46,20 @@ export function ModulosManager({ cursoId, modulos, leccionesPorModulo }: {
     router.refresh();
   }
 
+  async function moverModulo(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    const actual = modulos[index];
+    const destino = modulos[targetIndex];
+    if (!supabase || !actual || !destino) return;
+    setBusy(actual.id); setError(null);
+    const first = await supabase.from("modulos").update({ orden: destino.orden } as never).eq("id", actual.id);
+    if (first.error) { setBusy(null); setError(first.error.message); return; }
+    const second = await supabase.from("modulos").update({ orden: actual.orden } as never).eq("id", destino.id);
+    setBusy(null);
+    if (second.error) { setError(second.error.message); return; }
+    router.refresh();
+  }
+
   return (
     <div className="grid gap-4">
       <div className="card p-2">
@@ -64,6 +78,16 @@ export function ModulosManager({ cursoId, modulos, leccionesPorModulo }: {
                   <p className="text-xs" style={{ color: "var(--text-faint)" }}>
                     {leccionesPorModulo[m.id] ?? 0} lecciones
                   </p>
+                </div>
+                <div className="hidden items-center sm:flex">
+                  <button onClick={() => moverModulo(i, -1)} disabled={i === 0 || busy === m.id}
+                    className="flex h-8 w-7 items-center justify-center rounded-lg disabled:opacity-30" aria-label="Subir módulo">
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button onClick={() => moverModulo(i, 1)} disabled={i === modulos.length - 1 || busy === m.id}
+                    className="flex h-8 w-7 items-center justify-center rounded-lg disabled:opacity-30" aria-label="Bajar módulo">
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </button>
                 </div>
                 <button onClick={() => removeModulo(m.id)} disabled={busy === m.id}
                   className="flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-50" style={{ color: "#dc2626" }}

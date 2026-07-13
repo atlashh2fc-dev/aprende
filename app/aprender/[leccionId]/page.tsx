@@ -6,6 +6,7 @@ import { ContentRenderer } from "@/components/ContentRenderer";
 import { QuizTaker } from "@/components/QuizTaker";
 import { MarcarCompletada } from "@/components/MarcarCompletada";
 import { TutorChat } from "@/components/TutorChat";
+import { CertificadoButton } from "@/components/CertificadoButton";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Leccion, Curso, Quiz, QuizPregunta, QuizOpcion } from "@/lib/supabase/database.types";
@@ -142,7 +143,19 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
 
         {/* Marcar completada */}
         <div className="animate-rise rise-2 mt-7">
-          <MarcarCompletada leccionId={leccion.id} cursoId={leccion.curso_id} completed={estaCompletada} />
+          <MarcarCompletada
+            leccionId={leccion.id}
+            cursoId={leccion.curso_id}
+            completed={estaCompletada}
+            nextHref={siguiente ? `/aprender/${siguiente.id}` : undefined}
+          />
+          {progreso === 100 && (
+            <div className="mt-4 rounded-xl p-4" style={{ background: "var(--accent-dim)", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>¡Curso completado!</p>
+              <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>Tu certificado ya está disponible para emitir.</p>
+              <div className="mt-3"><CertificadoButton cursoId={leccion.curso_id} /></div>
+            </div>
+          )}
         </div>
 
         {/* Tutor IA del curso */}
