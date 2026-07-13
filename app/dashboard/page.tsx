@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
+import { AdminCharts } from "@/components/admin/AdminCharts";
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
@@ -236,7 +237,7 @@ async function AdminView() {
   const [cursosR, leccionesR, inscR, progR, quizzesR, intentosR, profilesR, instR] = await Promise.all([
     supabase.from("cursos").select("id, titulo, institucion_id, estado"),
     supabase.from("lecciones").select("curso_id"),
-    supabase.from("inscripciones").select("curso_id, estado, alumno_id"),
+    supabase.from("inscripciones").select("curso_id, estado, alumno_id, fecha_inscripcion"),
     supabase.from("progreso_lecciones").select("curso_id, completada"),
     supabase.from("quizzes").select("id, curso_id"),
     supabase.from("quiz_intentos").select("quiz_id, aprobado"),
@@ -246,7 +247,7 @@ async function AdminView() {
 
   const cursos = (cursosR.data as { id: string; titulo: string; institucion_id: string | null; estado: string }[] | null) ?? [];
   const lecciones = (leccionesR.data as { curso_id: string }[] | null) ?? [];
-  const insc = (inscR.data as { curso_id: string; estado: string; alumno_id: string }[] | null) ?? [];
+  const insc = (inscR.data as { curso_id: string; estado: string; alumno_id: string; fecha_inscripcion: string | null }[] | null) ?? [];
   const prog = (progR.data as { curso_id: string; completada: boolean }[] | null) ?? [];
   const quizzes = (quizzesR.data as { id: string; curso_id: string }[] | null) ?? [];
   const intentos = (intentosR.data as { quiz_id: string; aprobado: boolean }[] | null) ?? [];
@@ -277,6 +278,33 @@ async function AdminView() {
     })
     .sort((a, b) => b.inscritos - a.inscritos);
 
+  // Datasets para los gráficos
+  const rolesChart = [
+    { name: "Alumnos", value: totalAlumnos },
+    { name: "Profesores", value: totalProfes },
+    { name: "Supervisores", value: profiles.filter((p) => p.rol === "supervisor").length },
+    { name: "Admins", value: profiles.filter((p) => p.rol === "admin").length },
+  ].filter((r) => r.value > 0);
+
+  const cursosChart = reporteCursos.map((r) => ({
+    curso: r.titulo.length > 16 ? r.titulo.slice(0, 15) + "…" : r.titulo,
+    inscritos: r.inscritos, avance: r.avance, aprob: r.aprob,
+  }));
+
+  const WEEKS = 8;
+  const MS_WEEK = 7 * 24 * 3600 * 1000;
+  const now = Date.now();
+  const buckets = new Array(WEEKS).fill(0);
+  insc.forEach((i) => {
+    if (!i.fecha_inscripcion) return;
+    const wa = Math.floor((now - new Date(i.fecha_inscripcion).getTime()) / MS_WEEK);
+    if (wa >= 0 && wa < WEEKS) buckets[WEEKS - 1 - wa]++;
+  });
+  const actividadChart = buckets.map((n, idx) => ({
+    semana: new Date(now - (WEEKS - 1 - idx) * MS_WEEK).toLocaleDateString("es-CL", { day: "2-digit", month: "short" }),
+    inscripciones: n,
+  }));
+
   // Por institución
   const reporteInst = inst.map((ins) => {
     const cursoIds = new Set(cursos.filter((c) => c.institucion_id === ins.id).map((c) => c.id));
@@ -296,34 +324,13 @@ async function AdminView() {
         <StatCard icon={TrendingUp} label="Finalización" value={`${finalizacion}%`} color="var(--primary)" />
       </div>
 
-      {/* Reporte por curso */}
+      {/* Reportes gráficos */}
       <div className="animate-rise rise-2">
         <div className="mb-4 flex items-center gap-2">
-          <BookOpen className="h-4 w-4" style={{ color: "var(--primary)" }} />
-          <SectionTitle>Rendimiento por curso</SectionTitle>
+          <TrendingUp className="h-4 w-4" style={{ color: "var(--primary)" }} />
+          <SectionTitle>Reportes</SectionTitle>
         </div>
-        <div className="card overflow-hidden">
-          <div className="hidden grid-cols-[1fr_auto_140px_90px] gap-4 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider sm:grid"
-            style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}>
-            <span>Curso</span><span>Inscritos</span><span>Avance promedio</span><span>Aprob.</span>
-          </div>
-          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {reporteCursos.map((r) => (
-              <div key={r.id} className="grid grid-cols-2 items-center gap-2 px-5 py-3.5 sm:grid-cols-[1fr_auto_140px_90px] sm:gap-4">
-                <span className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{r.titulo}</span>
-                <span className="text-right text-sm sm:text-left" style={{ color: "var(--text-muted)" }}>{r.inscritos}</span>
-                <div className="col-span-2 sm:col-span-1">
-                  <div className="mb-1 flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
-                    <span className="sm:hidden">Avance</span><span>{r.avance}%</span>
-                  </div>
-                  <Bar value={r.avance} />
-                </div>
-                <span className="text-sm font-semibold"
-                  style={{ color: r.aprob >= 60 ? "var(--accent)" : "#d97706" }}>{r.aprob}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AdminCharts roles={rolesChart} cursos={cursosChart} actividad={actividadChart} />
       </div>
 
       {/* Reporte por institución + Aprobación */}
