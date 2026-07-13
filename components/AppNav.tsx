@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, Eye } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/supabase/database.types";
 import { ROLE_LABEL } from "@/lib/roles";
+import { DEMO_COOKIE } from "@/lib/demo";
 
 interface NavLink { href: string; label: string; }
 
@@ -35,14 +36,23 @@ const LINKS_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
-export function AppNav({ user }: {
+export function AppNav({ user, isAdmin = false, viewAs }: {
   user: { nombre: string | null; email: string; rol: UserRole; avatar_url: string | null; avatar_initials: string };
+  isAdmin?: boolean;
+  viewAs?: UserRole;
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const links = LINKS_BY_ROLE[user.rol] ?? LINKS_BY_ROLE.alumno;
+  const effRole = viewAs ?? user.rol;
+  const links = LINKS_BY_ROLE[effRole] ?? LINKS_BY_ROLE.alumno;
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  function verComo(role: UserRole) {
+    if (role === "admin") document.cookie = `${DEMO_COOKIE}=; path=/; max-age=0`;
+    else document.cookie = `${DEMO_COOKIE}=${role}; path=/; max-age=86400`;
+    router.refresh();
+  }
 
   async function signOut() {
     const supabase = createClient();
@@ -90,13 +100,26 @@ export function AppNav({ user }: {
         </div>
 
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <div className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 sm:flex"
+              style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)" }}
+              title="Ver la plataforma como otro rol (modo demo)">
+              <Eye className="h-3.5 w-3.5" style={{ color: "var(--primary)" }} />
+              <select value={effRole} onChange={(e) => verComo(e.target.value as UserRole)}
+                className="bg-transparent text-xs font-semibold outline-none" style={{ color: "var(--text)" }}>
+                {(["admin", "profesor", "supervisor", "alumno"] as UserRole[]).map((r) => (
+                  <option key={r} value={r}>Ver como: {ROLE_LABEL[r]}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <ThemeToggle />
           <span className="hidden text-right sm:block">
             <span className="block text-xs font-semibold leading-tight" style={{ color: "var(--text)" }}>
               {user.nombre ?? user.email.split("@")[0]}
             </span>
             <span className="block text-[0.65rem] uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-              {ROLE_LABEL[user.rol]}
+              {ROLE_LABEL[effRole]}{isAdmin && viewAs && viewAs !== "admin" ? " · demo" : ""}
             </span>
           </span>
           {user.avatar_url ? (

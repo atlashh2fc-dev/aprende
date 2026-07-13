@@ -8,6 +8,7 @@ import { ChartCard, CursosBar, ActividadArea } from "@/components/Charts";
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
+import { readDemoRole, effectiveRole } from "@/lib/demo";
 import type { Curso } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
@@ -16,23 +17,32 @@ export default async function DashboardPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/dashboard");
   const supabase = await createClient();
+  const demo = await readDemoRole();
+  const role = effectiveRole(user.rol, demo);
+  const enModoDemo = user.rol === "admin" && !!demo && demo !== "admin";
 
   return (
     <AppShell user={user}>
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
         {/* Bienvenida */}
         <div className="animate-rise mb-8">
-          <p className="eyebrow" style={{ color: "var(--primary)" }}>{ROLE_LABEL[user.rol]}</p>
+          <p className="eyebrow flex items-center gap-2" style={{ color: "var(--primary)" }}>
+            {ROLE_LABEL[role]}
+            {enModoDemo && (
+              <span className="rounded px-1.5 py-0.5 text-[0.6rem] font-bold uppercase not-italic"
+                style={{ background: "var(--accent-dim)", color: "var(--accent)" }}>Modo demo</span>
+            )}
+          </p>
           <h1 className="mt-1 font-serif-brand tracking-tight"
             style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 700, color: "var(--text)" }}>
             Hola, {displayName(user)}.
           </h1>
         </div>
 
-        {user.rol === "alumno" && <AlumnoView userId={user.id} />}
-        {user.rol === "profesor" && <ProfesorView userId={user.id} />}
-        {user.rol === "supervisor" && <SupervisorView institucionId={user.institucion_id} />}
-        {user.rol === "admin" && <AdminView />}
+        {role === "alumno" && <AlumnoView userId={user.id} />}
+        {role === "profesor" && <ProfesorView userId={user.id} />}
+        {role === "supervisor" && <SupervisorView institucionId={user.institucion_id} />}
+        {role === "admin" && <AdminView />}
         {!supabase && (
           <p className="card mt-6 p-6 text-sm" style={{ color: "var(--text-muted)" }}>
             Conecta Supabase (variables en <code>.env.local</code>) para ver datos reales.
