@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -9,10 +10,13 @@ export const runtime = "nodejs";
 const DEMO_EMAIL = "admin.demo@aprende.dev";
 
 async function ensureDemoUser(admin: NonNullable<ReturnType<typeof createAdminClient>>) {
-  const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (listError) throw listError;
-
-  let user = listed.users.find((candidate) => candidate.email?.toLowerCase() === DEMO_EMAIL);
+  let user;
+  for (let page = 1; page <= 20 && !user; page += 1) {
+    const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (listError) throw listError;
+    user = listed.users.find((candidate) => candidate.email?.toLowerCase() === DEMO_EMAIL);
+    if (listed.users.length < 1000) break;
+  }
   if (!user) {
     const { data, error } = await admin.auth.admin.createUser({
       email: DEMO_EMAIL,
@@ -31,6 +35,7 @@ async function ensureDemoUser(admin: NonNullable<ReturnType<typeof createAdminCl
     rol: "admin",
   } as never, { onConflict: "id" });
   if (profileError) throw profileError;
+  return user.id;
 }
 
 async function validateTicket(ticket: string) {
@@ -56,15 +61,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "El demo no está configurado." }, { status: 503 });
   }
 
+  const demoPassword = randomBytes(32).toString("base64url");
   try {
-    await ensureDemoUser(admin);
+    const userId = await ensureDemoUser(admin);
+    const { error: passwordError } = await admin.auth.admin.updateUserById(userId, {
+      password: demoPassword,
+      email_confirm: true,
+    });
+    if (passwordError) throw passwordError;
   } catch {
-    return NextResponse.json({ error: "La cuenta demo no está disponible." }, { status: 503 });
-  }
-
-  const { data: link, error: linkError } = await admin.auth.admin.generateLink({ type: "magiclink", email: DEMO_EMAIL });
-  const tokenHash = link?.properties?.hashed_token;
-  if (linkError || !tokenHash) {
     return NextResponse.json({ error: "La cuenta demo no está disponible." }, { status: 503 });
   }
 
@@ -84,7 +89,7 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "magiclink" });
+  const { error } = await supabase.auth.signInWithPassword({ email: DEMO_EMAIL, password: demoPassword });
   if (error) return NextResponse.json({ error: "No fue posible crear la sesión demo." }, { status: 503 });
 
   response.cookies.set("geimser-demo-embed", "1", {
