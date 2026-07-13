@@ -17,6 +17,7 @@ const LINKS_BY_ROLE: Record<UserRole, NavLink[]> = {
     { href: "/dashboard", label: "Inicio" },
     { href: "/explorar", label: "Cursos" },
     { href: "/mis-cursos", label: "Mis cursos" },
+    { href: "/mis-entregas", label: "Entregas" },
     { href: "/agenda", label: "Agenda" },
   ],
   profesor: [

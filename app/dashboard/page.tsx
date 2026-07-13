@@ -74,11 +74,12 @@ async function AlumnoView({ userId }: { userId: string }) {
     const base = rows.map((r) => r.cursos).filter(Boolean) as { id: string; slug: string; titulo: string; imagen_url: string | null }[];
     if (base.length) {
       const ids = base.map((c) => c.id);
-      const [{ data: leccionesRaw }, { data: progresoRaw }, { data: eventosRaw }, { data: quizzesRaw }, { count: unreadNotifications }] = await Promise.all([
+      const [{ data: leccionesRaw }, { data: progresoRaw }, { data: eventosRaw }, { data: quizzesRaw }, { data: tareasRaw }, { count: unreadNotifications }] = await Promise.all([
         supabase.from("lecciones").select("id, curso_id, orden").in("curso_id", ids).order("orden"),
         supabase.from("progreso_lecciones").select("curso_id, leccion_id, completada").eq("alumno_id", userId).in("curso_id", ids),
         supabase.from("eventos_academicos").select("id, curso_id, titulo, tipo, fecha_inicio").in("curso_id", ids).gte("fecha_inicio", new Date().toISOString()).order("fecha_inicio", { ascending: true }).limit(4),
         supabase.from("quizzes").select("id, curso_id, leccion_id, titulo, fecha_limite, intentos_maximos").in("curso_id", ids),
+        supabase.from("tareas").select("id, curso_id, titulo, fecha_limite").in("curso_id", ids).eq("publicada", true),
         supabase.from("notificaciones").select("id", { count: "exact", head: true }).eq("usuario_id", userId).is("leida_at", null),
       ]);
       const lecciones = (leccionesRaw as { id: string; curso_id: string; orden: number }[] | null) ?? [];
@@ -98,6 +99,7 @@ async function AlumnoView({ userId }: { userId: string }) {
         .map((event) => ({ ...event, curso: titleByCourse.get(event.curso_id) ?? "Curso" }));
 
       const quizzes = (quizzesRaw as { id: string; curso_id: string; leccion_id: string | null; titulo: string; fecha_limite: string | null; intentos_maximos: number | null }[] | null) ?? [];
+      const tareas = (tareasRaw as { id: string; curso_id: string; titulo: string; fecha_limite: string | null }[] | null) ?? [];
       let attempts: { quiz_id: string; puntaje: number; aprobado: boolean; feedback_docente: string | null; created_at: string }[] = [];
       if (quizzes.length) {
         const { data: attemptsRaw } = await supabase
@@ -108,7 +110,21 @@ async function AlumnoView({ userId }: { userId: string }) {
           .order("created_at", { ascending: false });
         attempts = (attemptsRaw as typeof attempts | null) ?? [];
       }
+      let taskSubmissions: { tarea_id: string }[] = [];
+      if (tareas.length) {
+        const { data } = await supabase.from("entregas_tarea").select("tarea_id").eq("alumno_id", userId).in("tarea_id", tareas.map((tarea) => tarea.id));
+        taskSubmissions = (data as typeof taskSubmissions | null) ?? [];
+      }
       const now = Date.now();
+      const submittedTaskIds = new Set(taskSubmissions.map((submission) => submission.tarea_id));
+      for (const tarea of tareas) {
+        if (submittedTaskIds.has(tarea.id)) continue;
+        const deadline = tarea.fecha_limite ? new Date(tarea.fecha_limite).getTime() : null;
+        const courseTitle = titleByCourse.get(tarea.curso_id) ?? "tu curso";
+        if (deadline && deadline < now) actionItems.push({ id: `late-task-${tarea.id}`, title: `Entrega atrasada: ${tarea.titulo}`, detail: `${courseTitle} · envíala para que tu docente pueda revisarla.`, href: `/entregas/${tarea.id}`, priority: "urgent" });
+        else if (deadline) { const hours = Math.ceil((deadline - now) / 3_600_000); actionItems.push({ id: `task-${tarea.id}`, title: `Entrega pendiente: ${tarea.titulo}`, detail: `${courseTitle} · ${hours <= 24 ? `cierra en ${Math.max(hours, 1)} h` : `cierra el ${new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "short" }).format(new Date(deadline))}`}.`, href: `/entregas/${tarea.id}`, priority: hours <= 72 ? "urgent" : "soon" }); }
+        else actionItems.push({ id: `task-${tarea.id}`, title: `Entrega pendiente: ${tarea.titulo}`, detail: `${courseTitle} · sin fecha límite definida.`, href: `/entregas/${tarea.id}`, priority: "normal" });
+      }
       for (const quiz of quizzes) {
         const quizAttempts = attempts.filter((attempt) => attempt.quiz_id === quiz.id);
         const latest = quizAttempts[0];

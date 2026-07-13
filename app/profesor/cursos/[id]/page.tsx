@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardCheck, ExternalLink, ListChecks, Layers } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, ClipboardPenLine, ExternalLink, ListChecks, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CursoForm } from "@/components/admin/CursoForm";
 import { LeccionesManager } from "@/components/admin/LeccionesManager";
@@ -52,6 +52,10 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
               style={{ fontSize: "clamp(1.7rem,4vw,2.2rem)", color: "var(--text)" }}>{curso.titulo}</h1>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <Link href={`/profesor/cursos/${id}/entregas`}
+              className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
+              <ClipboardPenLine className="h-3.5 w-3.5" /> Entregas
+            </Link>
             <Link href={`/profesor/cursos/${id}/calificaciones`}
               className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
               <ClipboardCheck className="h-3.5 w-3.5" /> Calificaciones

@@ -9,6 +9,7 @@ export type LeccionTipo = "video" | "texto" | "quiz";
 export type InscripcionEstado = "activa" | "completada" | "cancelada";
 export type PreguntaTipo = "unica" | "multiple";
 export type EventoAcademicoTipo = "evaluacion" | "entrega" | "sesion" | "aviso";
+export type EntregaEstado = "enviada" | "atrasada" | "revisada";
 
 export interface Institucion {
   id: string;
@@ -162,6 +163,56 @@ export interface Notificacion {
   created_at: string;
 }
 
+export interface Tarea {
+  id: string;
+  curso_id: string;
+  titulo: string;
+  instrucciones: string;
+  fecha_limite: string | null;
+  puntaje_maximo: number;
+  permitir_reentrega: boolean;
+  publicada: boolean;
+  creado_por: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EntregaTarea {
+  id: string;
+  tarea_id: string;
+  alumno_id: string;
+  texto: string | null;
+  enlace: string | null;
+  archivo_path: string | null;
+  estado: EntregaEstado;
+  entregado_at: string;
+  puntaje: number | null;
+  feedback_docente: string | null;
+  revisado_at: string | null;
+  revisado_por: string | null;
+  updated_at: string;
+}
+
+export interface TareaRubrica {
+  id: string;
+  tarea_id: string;
+  criterio: string;
+  descripcion: string | null;
+  puntaje_maximo: number;
+  orden: number;
+  created_at: string;
+}
+
+export interface EntregaRubricaResultado {
+  id: string;
+  entrega_id: string;
+  rubrica_id: string;
+  puntaje: number;
+  comentario: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NotaLeccion {
   id: string;
   alumno_id: string;
@@ -197,6 +248,10 @@ export interface Database {
       eventos_academicos: Table<EventoAcademico>;
       notas_leccion: Table<NotaLeccion>;
       notificaciones: Table<Notificacion>;
+      tareas: Table<Tarea>;
+      entregas_tarea: Table<EntregaTarea>;
+      tarea_rubricas: Table<TareaRubrica>;
+      entrega_rubrica_resultados: Table<EntregaRubricaResultado>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
