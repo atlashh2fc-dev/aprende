@@ -5,8 +5,9 @@
  */
 import { cookies } from "next/headers";
 import type { UserRole } from "@/lib/supabase/database.types";
+import { DEMO_COOKIE } from "@/lib/demo-shared";
 
-export const DEMO_COOKIE = "aprende_demo_role";
+export { DEMO_COOKIE };
 const VALID: UserRole[] = ["alumno", "profesor", "supervisor", "admin"];
 
 export async function readDemoRole(): Promise<UserRole | null> {

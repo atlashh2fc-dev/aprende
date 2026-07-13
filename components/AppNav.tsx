@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/supabase/database.types";
 import { ROLE_LABEL } from "@/lib/roles";
-import { DEMO_COOKIE } from "@/lib/demo";
+import { DEMO_COOKIE } from "@/lib/demo-shared";
 
 interface NavLink { href: string; label: string; }
 
