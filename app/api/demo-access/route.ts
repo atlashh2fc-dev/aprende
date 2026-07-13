@@ -7,7 +7,7 @@ import type { Database } from "@/lib/supabase/database.types";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const DEMO_EMAIL = "admin.demo@aprende.dev";
+const DEMO_EMAIL = "comercial.demo@aprende.geimser.cl";
 
 async function ensureDemoUser(admin: NonNullable<ReturnType<typeof createAdminClient>>) {
   const { data: existingProfile, error: lookupError } = await admin
