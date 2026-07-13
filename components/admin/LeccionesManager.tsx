@@ -20,8 +20,8 @@ const TIPOS: { value: LeccionTipo; label: string; icon: typeof Video }[] = [
 const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-colors";
 const inputStyle = { background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" } as const;
 
-export function LeccionesManager({ cursoId, lecciones, modulos = [] }: {
-  cursoId: string; lecciones: Leccion[]; modulos?: { id: string; titulo: string }[];
+export function LeccionesManager({ cursoId, lecciones, modulos = [], basePath = "/admin/cursos" }: {
+  cursoId: string; lecciones: Leccion[]; modulos?: { id: string; titulo: string }[]; basePath?: string;
 }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
@@ -117,7 +117,7 @@ export function LeccionesManager({ cursoId, lecciones, modulos = [] }: {
                     </select>
                   )}
                   {l.tipo === "quiz" && (
-                    <Link href={`/admin/cursos/${cursoId}/leccion/${l.id}/quiz`}
+                    <Link href={`${basePath}/${cursoId}/leccion/${l.id}/quiz`}
                       className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                       style={{ background: "var(--primary-dim)", color: "var(--primary)" }}>
                       <ListChecks className="h-3.5 w-3.5" /> Preguntas

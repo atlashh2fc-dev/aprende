@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import type { Curso, CursoEstado } from "@/lib/supabase/database.types";
 
 type CursoFields = Pick<
@@ -49,7 +50,9 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function CursoForm({ mode, curso }: { mode: "create" | "edit"; curso?: Curso }) {
+export function CursoForm({ mode, curso, basePath = "/admin/cursos" }: {
+  mode: "create" | "edit"; curso?: Curso; basePath?: string;
+}) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +111,7 @@ export function CursoForm({ mode, curso }: { mode: "create" | "edit"; curso?: Cu
         .single();
       if (error) { setSaving(false); setError(friendly(error.message)); return; }
       const id = (data as { id: string }).id;
-      router.push(`/admin/cursos/${id}`);
+      router.push(`${basePath}/${id}`);
       router.refresh();
     } else {
       const { error } = await supabase
@@ -182,9 +185,8 @@ export function CursoForm({ mode, curso }: { mode: "create" | "edit"; curso?: Cu
         </div>
 
         <div>
-          <Label>Imagen de portada (URL)</Label>
-          <input className={inputCls} style={inputStyle} value={f.imagen_url ?? ""}
-            onChange={(e) => set("imagen_url", e.target.value)} placeholder="https://…" />
+          <Label>Imagen de portada</Label>
+          <ImageUpload value={f.imagen_url ?? ""} onChange={(url) => set("imagen_url", url)} />
         </div>
 
         {error && (
