@@ -121,6 +121,14 @@ export interface QuizIntento {
   created_at: string;
 }
 
+export interface Certificado {
+  id: string;
+  codigo: string;
+  alumno_id: string;
+  curso_id: string;
+  emitido_at: string;
+}
+
 type Table<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -142,6 +150,7 @@ export interface Database {
       inscripciones: Table<Inscripcion>;
       progreso_lecciones: Table<ProgresoLeccion>;
       quiz_intentos: Table<QuizIntento>;
+      certificados: Table<Certificado>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

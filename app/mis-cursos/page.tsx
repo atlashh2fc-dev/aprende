@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SectionTitle } from "@/components/ui/StatCard";
+import { CertificadoButton } from "@/components/CertificadoButton";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -65,19 +66,19 @@ export default async function MisCursosPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {cursos.map((c, i) => (
-              <Link key={c.slug} href={`/cursos/${c.slug}`}
+              <div key={c.slug}
                 className={`card-glass group animate-rise rise-${(i % 5) + 1} overflow-hidden`}>
-                <div className="aspect-[16/9] overflow-hidden"
+                <Link href={`/cursos/${c.slug}`} className="block aspect-[16/9] overflow-hidden"
                   style={{ background: c.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))" }}>
                   {c.imagen_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={c.imagen_url} alt={c.titulo}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   )}
-                </div>
+                </Link>
                 <div className="p-4">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="line-clamp-1 text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</h4>
+                    <Link href={`/cursos/${c.slug}`} className="line-clamp-1 text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</Link>
                     <span className={`${c.estado === "completada" ? "badge-accent" : "badge"} shrink-0 rounded-full px-2.5 py-0.5 text-[0.65rem] font-bold capitalize`}>
                       {c.estado}
                     </span>
@@ -90,8 +91,13 @@ export default async function MisCursosPage() {
                       <div className="progress-bar h-full" style={{ width: `${c.avance}%` }} />
                     </div>
                   </div>
+                  {c.avance === 100 && (
+                    <div className="mt-3">
+                      <CertificadoButton cursoId={c.id} />
+                    </div>
+                  )}
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
