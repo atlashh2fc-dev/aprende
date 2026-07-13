@@ -5,6 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { QuizTaker } from "@/components/QuizTaker";
 import { MarcarCompletada } from "@/components/MarcarCompletada";
+import { TutorChat } from "@/components/TutorChat";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Leccion, Curso, Quiz, QuizPregunta, QuizOpcion } from "@/lib/supabase/database.types";
@@ -142,6 +143,11 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
         {/* Marcar completada */}
         <div className="animate-rise rise-2 mt-7">
           <MarcarCompletada leccionId={leccion.id} cursoId={leccion.curso_id} completed={estaCompletada} />
+        </div>
+
+        {/* Tutor IA del curso */}
+        <div className="animate-rise rise-3 mt-7">
+          <TutorChat cursoId={leccion.curso_id} cursoTitulo={curso?.titulo} />
         </div>
 
         {/* Navegación entre lecciones */}
