@@ -99,6 +99,7 @@ export interface Inscripcion {
   curso_id: string;
   estado: InscripcionEstado;
   fecha_inscripcion: string;
+  fecha_limite: string | null;
 }
 
 export interface ProgresoLeccion {
