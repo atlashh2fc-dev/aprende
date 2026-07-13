@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2, CalendarDays, FileWarning, ClipboardList, Presentation, Megaphone } from "lucide-react";
+import { AlertTriangle, BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2, CalendarDays, FileWarning, ClipboardList, Presentation, Megaphone } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { AdminCharts } from "@/components/admin/AdminCharts";
@@ -60,6 +60,7 @@ async function AlumnoView({ userId }: { userId: string }) {
   let inscritos = 0, completados = 0;
   let cursos: { id: string; slug: string; titulo: string; imagen_url: string | null; avance: number; nextHref: string }[] = [];
   let upcoming: { id: string; titulo: string; tipo: string; fecha_inicio: string; curso: string }[] = [];
+  let actionItems: { id: string; title: string; detail: string; href: string; priority: "urgent" | "soon" | "normal" }[] = [];
 
   if (supabase) {
     const { data } = await supabase
@@ -73,10 +74,12 @@ async function AlumnoView({ userId }: { userId: string }) {
     const base = rows.map((r) => r.cursos).filter(Boolean) as { id: string; slug: string; titulo: string; imagen_url: string | null }[];
     if (base.length) {
       const ids = base.map((c) => c.id);
-      const [{ data: leccionesRaw }, { data: progresoRaw }, { data: eventosRaw }] = await Promise.all([
+      const [{ data: leccionesRaw }, { data: progresoRaw }, { data: eventosRaw }, { data: quizzesRaw }, { count: unreadNotifications }] = await Promise.all([
         supabase.from("lecciones").select("id, curso_id, orden").in("curso_id", ids).order("orden"),
         supabase.from("progreso_lecciones").select("curso_id, leccion_id, completada").eq("alumno_id", userId).in("curso_id", ids),
         supabase.from("eventos_academicos").select("id, curso_id, titulo, tipo, fecha_inicio").in("curso_id", ids).gte("fecha_inicio", new Date().toISOString()).order("fecha_inicio", { ascending: true }).limit(4),
+        supabase.from("quizzes").select("id, curso_id, leccion_id, titulo, fecha_limite, intentos_maximos").in("curso_id", ids),
+        supabase.from("notificaciones").select("id", { count: "exact", head: true }).eq("usuario_id", userId).is("leida_at", null),
       ]);
       const lecciones = (leccionesRaw as { id: string; curso_id: string; orden: number }[] | null) ?? [];
       const progreso = (progresoRaw as { curso_id: string; leccion_id: string; completada: boolean }[] | null) ?? [];
@@ -93,8 +96,46 @@ async function AlumnoView({ userId }: { userId: string }) {
       const titleByCourse = new Map(base.map((course) => [course.id, course.titulo]));
       upcoming = ((eventosRaw as { id: string; curso_id: string; titulo: string; tipo: string; fecha_inicio: string }[] | null) ?? [])
         .map((event) => ({ ...event, curso: titleByCourse.get(event.curso_id) ?? "Curso" }));
+
+      const quizzes = (quizzesRaw as { id: string; curso_id: string; leccion_id: string | null; titulo: string; fecha_limite: string | null; intentos_maximos: number | null }[] | null) ?? [];
+      let attempts: { quiz_id: string; puntaje: number; aprobado: boolean; feedback_docente: string | null; created_at: string }[] = [];
+      if (quizzes.length) {
+        const { data: attemptsRaw } = await supabase
+          .from("quiz_intentos")
+          .select("quiz_id, puntaje, aprobado, feedback_docente, created_at")
+          .eq("alumno_id", userId)
+          .in("quiz_id", quizzes.map((quiz) => quiz.id))
+          .order("created_at", { ascending: false });
+        attempts = (attemptsRaw as typeof attempts | null) ?? [];
+      }
+      const now = Date.now();
+      for (const quiz of quizzes) {
+        const quizAttempts = attempts.filter((attempt) => attempt.quiz_id === quiz.id);
+        const latest = quizAttempts[0];
+        const remaining = quiz.intentos_maximos === null || quizAttempts.length < quiz.intentos_maximos;
+        const deadline = quiz.fecha_limite ? new Date(quiz.fecha_limite).getTime() : null;
+        const href = quiz.leccion_id ? `/aprender/${quiz.leccion_id}` : "/agenda";
+        const courseTitle = titleByCourse.get(quiz.curso_id) ?? "tu curso";
+        if (deadline && deadline < now && quizAttempts.length === 0) {
+          actionItems.push({ id: `expired-${quiz.id}`, title: `Plazo vencido: ${quiz.titulo}`, detail: `${courseTitle} · revisa las instrucciones con tu docente.`, href: "/agenda", priority: "urgent" });
+        } else if (latest && !latest.aprobado && remaining) {
+          actionItems.push({ id: `retry-${quiz.id}`, title: `Puedes reintentar ${quiz.titulo}`, detail: `${courseTitle} · último resultado: ${latest.puntaje}%.`, href, priority: deadline && deadline - now < 72 * 3600 * 1000 ? "urgent" : "soon" });
+        } else if (!quizAttempts.length && remaining && deadline) {
+          const hours = Math.ceil((deadline - now) / 3_600_000);
+          actionItems.push({ id: `quiz-${quiz.id}`, title: `Rinde ${quiz.titulo}`, detail: `${courseTitle} · ${hours <= 24 ? `cierra en ${Math.max(hours, 1)} h` : `cierra el ${new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "short" }).format(new Date(deadline))}`}.`, href, priority: hours <= 72 ? "urgent" : "soon" });
+        } else if (latest?.feedback_docente) {
+          actionItems.push({ id: `feedback-${quiz.id}`, title: `Revisa tu feedback en ${quiz.titulo}`, detail: `${courseTitle} · tu docente dejó una observación.`, href, priority: "normal" });
+        }
+      }
+      if ((unreadNotifications ?? 0) > 0) {
+        actionItems.push({ id: "notifications", title: "Tienes avisos sin leer", detail: `${unreadNotifications} comunicación${unreadNotifications === 1 ? "" : "es"} nueva${unreadNotifications === 1 ? "" : "s"} de tus cursos.`, href: "/notificaciones", priority: "normal" });
+      }
     }
   }
+
+  const priorityOrder = { urgent: 0, soon: 1, normal: 2 };
+  actionItems = actionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  const primaryAction = actionItems[0];
 
   if (inscritos === 0 && completados === 0) {
     return (
@@ -131,8 +172,13 @@ async function AlumnoView({ userId }: { userId: string }) {
       </div>
       <div className="animate-rise rise-2 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="card p-6 sm:p-7">
-          <p className="eyebrow" style={{ color: "var(--primary)" }}>Tu siguiente paso</p>
-          {cursos[0] ? <>
+          <p className="eyebrow" style={{ color: primaryAction?.priority === "urgent" ? "#b45309" : "var(--primary)" }}>{primaryAction?.priority === "urgent" ? "Atención requerida" : "Tu siguiente paso"}</p>
+          {primaryAction ? <>
+            <h2 className="mt-2 font-serif-brand text-2xl font-bold tracking-tight" style={{ color: "var(--text)" }}>{primaryAction.title}</h2>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{primaryAction.detail}</p>
+            <Link href={primaryAction.href} className="btn-primary mt-6 inline-flex items-center gap-2 rounded-lg px-5 py-3 text-xs">Resolver ahora <ArrowRight className="h-4 w-4" /></Link>
+            {actionItems.length > 1 && <div className="mt-6 border-t pt-4" style={{ borderColor: "var(--border)" }}>{actionItems.slice(1, 3).map((action) => <Link key={action.id} href={action.href} className="flex items-center justify-between gap-3 py-2 text-xs transition-opacity hover:opacity-75"><span className="flex min-w-0 items-center gap-2"><AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: action.priority === "urgent" ? "#b45309" : "var(--text-faint)" }} /><span className="truncate" style={{ color: "var(--text-muted)" }}>{action.title}</span></span><ArrowRight className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--primary)" }} /></Link>)}</div>}
+          </> : cursos[0] ? <>
             <h2 className="mt-2 font-serif-brand text-2xl font-bold tracking-tight" style={{ color: "var(--text)" }}>{cursos[0].titulo}</h2>
             <div className="mt-4 flex items-center gap-3"><div className="progress-track h-1.5 flex-1"><div className="progress-bar h-full" style={{ width: `${cursos[0].avance}%` }} /></div><span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-faint)" }}>{cursos[0].avance}%</span></div>
             <Link href={cursos[0].nextHref} className="btn-primary mt-6 inline-flex items-center gap-2 rounded-lg px-5 py-3 text-xs">Continuar curso <ArrowRight className="h-4 w-4" /></Link>
