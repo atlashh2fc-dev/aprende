@@ -10,32 +10,33 @@ export const runtime = "nodejs";
 const DEMO_EMAIL = "admin.demo@aprende.dev";
 
 async function ensureDemoUser(admin: NonNullable<ReturnType<typeof createAdminClient>>) {
-  let user;
-  for (let page = 1; page <= 20 && !user; page += 1) {
-    const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
-    if (listError) throw listError;
-    user = listed.users.find((candidate) => candidate.email?.toLowerCase() === DEMO_EMAIL);
-    if (listed.users.length < 1000) break;
-  }
-  if (!user) {
+  const { data: existingProfile, error: lookupError } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("email", DEMO_EMAIL)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+
+  let userId = (existingProfile as { id: string } | null)?.id;
+  if (!userId) {
     const { data, error } = await admin.auth.admin.createUser({
       email: DEMO_EMAIL,
       email_confirm: true,
       user_metadata: { full_name: "Demo Comercial Geimser" },
     });
     if (error || !data.user) throw error ?? new Error("No fue posible crear la cuenta demo.");
-    user = data.user;
+    userId = data.user.id;
   }
 
   const { error: profileError } = await admin.from("profiles").upsert({
-    id: user.id,
+    id: userId,
     email: DEMO_EMAIL,
     nombre: "Demo Comercial",
     apellido: "Geimser",
     rol: "admin",
   } as never, { onConflict: "id" });
   if (profileError) throw profileError;
-  return user.id;
+  return userId;
 }
 
 async function validateTicket(ticket: string) {
