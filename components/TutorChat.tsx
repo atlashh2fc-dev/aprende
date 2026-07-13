@@ -53,16 +53,16 @@ export function TutorChat({ cursoId, cursoTitulo }: { cursoId: string; cursoTitu
   function send(event: React.FormEvent) { event.preventDefault(); void ask(input); }
 
   return (
-    <aside className="card overflow-hidden" aria-label="Acompañante de estudio">
-      <div className="relative h-44 overflow-hidden px-5 py-5" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 26%, var(--surface)), var(--surface))" }}>
-        <div className="absolute -right-14 -top-14 h-56 w-56 rounded-full blur-3xl" style={{ background: "var(--primary-glow)" }} />
-        <div className="absolute bottom-0 right-0 h-full w-[59%]" style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 12%, transparent))" }} />
+    <aside className="card overflow-hidden" aria-label="Copiloto IA de estudio">
+      <div className="relative h-32 overflow-hidden px-5 py-5" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 20%, var(--surface)), var(--surface))" }}>
+        <div className="absolute -right-12 -top-14 h-48 w-48 rounded-full blur-3xl" style={{ background: "var(--primary-glow)" }} />
+        <div className="absolute -right-5 -top-5 h-40 w-40 rounded-full border" style={{ borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)" }} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/avatars/study-companion-bot.png" alt="Copiloto de inteligencia artificial" className="pointer-events-none absolute -right-9 -bottom-8 z-10 h-[226px] w-auto max-w-none object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,0.32)]" />
-        <div className="relative z-20 max-w-[58%]">
-          <p className="eyebrow" style={{ color: "var(--primary)" }}>A tu ritmo</p>
+        <img src="/avatars/study-companion-core.png" alt="Núcleo visual del Copiloto IA" className="animate-companion-float pointer-events-none absolute -right-7 -top-7 z-10 h-[154px] w-auto max-w-none object-contain drop-shadow-[0_16px_22px_rgba(0,0,0,0.24)]" />
+        <div className="relative z-20 max-w-[60%]">
+          <p className="eyebrow" style={{ color: "var(--primary)" }}>Asistencia contextual</p>
           <h2 className="mt-2 font-serif-brand text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>Copiloto IA</h2>
-          <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>Disponible cuando quieras revisar una idea.</p>
+          <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>Una ayuda breve, cuando la necesites.</p>
         </div>
       </div>
 

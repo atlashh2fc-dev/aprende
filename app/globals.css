@@ -211,6 +211,14 @@ body {
 .rise-4 { animation-delay: 0.26s; }
 .rise-5 { animation-delay: 0.33s; }
 
+@keyframes companion-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-3deg); }
+  50% { transform: translate3d(-3px, 5px, 0) rotate(3deg); }
+}
+.animate-companion-float {
+  animation: companion-float 7s ease-in-out infinite;
+}
+
 /* Flecha que se desliza en hover (usar .group en el padre) */
 .arrow-slide {
   transition: transform 0.25s var(--ease-out);
@@ -238,6 +246,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-rise,
+  .animate-companion-float,
   .skeleton {
     animation: none;
   }
