@@ -18,6 +18,13 @@ export interface PreguntaRow { id: string; enunciado: string; tipo: PreguntaTipo
 const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-colors";
 const inputStyle = { background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" } as const;
 
+function toDateTimeInput(value: string | null | undefined) {
+  if (!value) return "";
+  const date = new Date(value);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
 export function QuizBuilder({
   cursoId, leccionId, leccionTitulo, quiz, preguntas,
 }: {
@@ -32,16 +39,32 @@ export function QuizBuilder({
   // Estado del alta de quiz / de pregunta
   const [quizTitulo, setQuizTitulo] = useState(quiz?.titulo ?? leccionTitulo);
   const [aprobacion, setAprobacion] = useState(quiz?.aprobacion_min ?? 60);
+  const [fechaLimite, setFechaLimite] = useState(toDateTimeInput(quiz?.fecha_limite));
+  const [intentosMaximos, setIntentosMaximos] = useState(quiz?.intentos_maximos?.toString() ?? "");
   const [nuevaPregunta, setNuevaPregunta] = useState("");
   const [nuevoTipo, setNuevoTipo] = useState<PreguntaTipo>("unica");
   const [nuevaOpcion, setNuevaOpcion] = useState<Record<string, string>>({});
 
   function fail(msg: string) { setError(msg); setBusy(null); }
 
+  function quizPayload() {
+    const intentos = intentosMaximos.trim() === "" ? null : Number(intentosMaximos);
+    if (intentos !== null && (!Number.isInteger(intentos) || intentos < 1)) return null;
+    return {
+      curso_id: cursoId,
+      leccion_id: leccionId,
+      titulo: quizTitulo.trim() || leccionTitulo,
+      aprobacion_min: Math.min(100, Math.max(0, Number(aprobacion) || 60)),
+      fecha_limite: fechaLimite ? new Date(fechaLimite).toISOString() : null,
+      intentos_maximos: intentos,
+    };
+  }
+
   async function crearQuiz() {
     if (!supabase) return;
     setBusy("quiz"); setError(null);
-    const payload = { curso_id: cursoId, leccion_id: leccionId, titulo: quizTitulo.trim() || leccionTitulo, aprobacion_min: Number(aprobacion) || 60 };
+    const payload = quizPayload();
+    if (!payload) return fail("Los intentos deben ser un número entero mayor que cero.");
     const { error } = await supabase.from("quizzes").insert(payload as never);
     if (error) return fail(error.message);
     setBusy(null); router.refresh();
@@ -50,8 +73,11 @@ export function QuizBuilder({
   async function guardarQuiz() {
     if (!supabase || !quiz) return;
     setBusy("quiz"); setError(null);
+    const payload = quizPayload();
+    if (!payload) return fail("Los intentos deben ser un número entero mayor que cero.");
+    const { curso_id: _cursoId, leccion_id: _leccionId, ...settings } = payload;
     const { error } = await supabase.from("quizzes")
-      .update({ titulo: quizTitulo.trim() || leccionTitulo, aprobacion_min: Number(aprobacion) || 60 } as never)
+      .update(settings as never)
       .eq("id", quiz.id);
     if (error) return fail(error.message);
     setBusy(null); router.refresh();
@@ -128,6 +154,18 @@ export function QuizBuilder({
             <input type="number" min={0} max={100} className={inputCls} style={inputStyle}
               value={aprobacion} onChange={(e) => setAprobacion(Number(e.target.value))} />
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Fecha límite (opcional)</label>
+              <input type="datetime-local" className={inputCls} style={inputStyle} value={fechaLimite}
+                onChange={(e) => setFechaLimite(e.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Máximo de intentos</label>
+              <input type="number" min={1} className={inputCls} style={inputStyle} value={intentosMaximos}
+                onChange={(e) => setIntentosMaximos(e.target.value)} placeholder="Sin límite" />
+            </div>
+          </div>
           {error && <p className="text-xs" style={{ color: "#dc2626" }}>{error}</p>}
           <div>
             <button onClick={crearQuiz} disabled={busy === "quiz"}
@@ -146,7 +184,7 @@ export function QuizBuilder({
       {/* Config del quiz */}
       <div className="card p-5 sm:p-6">
         <p className="mb-4 text-sm font-semibold" style={{ color: "var(--text)" }}>Configuración</p>
-        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div className="grid gap-4 sm:grid-cols-2 sm:items-end">
           <div>
             <label className="mb-1.5 block text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Título</label>
             <input className={inputCls} style={inputStyle} value={quizTitulo} onChange={(e) => setQuizTitulo(e.target.value)} />
@@ -156,7 +194,18 @@ export function QuizBuilder({
             <input type="number" min={0} max={100} className={inputCls} style={inputStyle}
               value={aprobacion} onChange={(e) => setAprobacion(Number(e.target.value))} />
           </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Fecha límite (opcional)</label>
+            <input type="datetime-local" className={inputCls} style={inputStyle} value={fechaLimite}
+              onChange={(e) => setFechaLimite(e.target.value)} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Máximo de intentos</label>
+            <input type="number" min={1} className={inputCls} style={inputStyle} value={intentosMaximos}
+              onChange={(e) => setIntentosMaximos(e.target.value)} placeholder="Sin límite" />
+          </div>
         </div>
+        <p className="mt-2 text-[0.68rem]" style={{ color: "var(--text-faint)" }}>Deja ambos campos vacíos para una evaluación sin cierre ni límite de intentos.</p>
         <button onClick={guardarQuiz} disabled={busy === "quiz"}
           className="btn-ghost mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs disabled:opacity-60">
           {busy === "quiz" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Guardar

@@ -66,18 +66,43 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
   const initialNote = (noteRaw as { contenido: string } | null)?.contenido ?? "";
 
   // Quiz (si la lección es de tipo quiz). Se seleccionan opciones SIN es_correcta.
-  let quiz: { id: string; titulo: string; preguntas: { id: string; enunciado: string; tipo: "unica" | "multiple"; opciones: { id: string; texto: string }[] }[] } | null = null;
+  let quiz: {
+    id: string;
+    titulo: string;
+    fechaLimite: string | null;
+    intentosMaximos: number | null;
+    intentosUsados: number;
+    feedbackDocente: string | null;
+    preguntas: { id: string; enunciado: string; tipo: "unica" | "multiple"; opciones: { id: string; texto: string }[] }[];
+  } | null = null;
   if (leccion.tipo === "quiz") {
-    const { data: qRaw } = await supabase.from("quizzes").select("id, titulo").eq("leccion_id", leccion.id).maybeSingle();
-    const q = qRaw as Pick<Quiz, "id" | "titulo"> | null;
+    const { data: qRaw } = await supabase
+      .from("quizzes")
+      .select("id, titulo, fecha_limite, intentos_maximos")
+      .eq("leccion_id", leccion.id)
+      .maybeSingle();
+    const q = qRaw as Pick<Quiz, "id" | "titulo" | "fecha_limite" | "intentos_maximos"> | null;
     if (q) {
       const { data: pRaw } = await supabase.from("quiz_preguntas").select("id, enunciado, tipo, orden").eq("quiz_id", q.id).order("orden");
       const preguntas = (pRaw as Pick<QuizPregunta, "id" | "enunciado" | "tipo" | "orden">[] | null) ?? [];
       const { data: oRaw } = await supabase.from("quiz_opciones").select("id, pregunta_id, texto, orden")
         .in("pregunta_id", preguntas.map((p) => p.id)).order("orden");
       const opciones = (oRaw as Pick<QuizOpcion, "id" | "pregunta_id" | "texto" | "orden">[] | null) ?? [];
+      const { data: intentosRaw, count } = await supabase
+        .from("quiz_intentos")
+        .select("feedback_docente, created_at", { count: "exact" })
+        .eq("quiz_id", q.id)
+        .eq("alumno_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const ultimoIntento = (intentosRaw as { feedback_docente: string | null; created_at: string }[] | null)?.[0] ?? null;
       quiz = {
-        id: q.id, titulo: q.titulo,
+        id: q.id,
+        titulo: q.titulo,
+        fechaLimite: q.fecha_limite,
+        intentosMaximos: q.intentos_maximos,
+        intentosUsados: count ?? 0,
+        feedbackDocente: ultimoIntento?.feedback_docente ?? null,
         preguntas: preguntas.map((p) => ({
           id: p.id, enunciado: p.enunciado, tipo: p.tipo,
           opciones: opciones.filter((o) => o.pregunta_id === p.id).map((o) => ({ id: o.id, texto: o.texto })),
@@ -146,7 +171,15 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
 
           {leccion.tipo === "quiz" && (
             quiz && quiz.preguntas.length > 0
-              ? <QuizTaker quizId={quiz.id} titulo={quiz.titulo} preguntas={quiz.preguntas} />
+              ? <QuizTaker
+                  quizId={quiz.id}
+                  titulo={quiz.titulo}
+                  preguntas={quiz.preguntas}
+                  fechaLimite={quiz.fechaLimite}
+                  intentosMaximos={quiz.intentosMaximos}
+                  intentosUsados={quiz.intentosUsados}
+                  feedbackDocente={quiz.feedbackDocente}
+                />
               : <p className="card p-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
                   Este quiz aún no tiene preguntas.
                 </p>

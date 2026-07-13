@@ -75,6 +75,8 @@ export interface Quiz {
   titulo: string;
   descripcion: string | null;
   aprobacion_min: number;
+  fecha_limite: string | null;
+  intentos_maximos: number | null;
   created_at: string;
 }
 
@@ -120,6 +122,9 @@ export interface QuizIntento {
   puntaje: number;
   aprobado: boolean;
   respuestas: unknown;
+  feedback_docente: string | null;
+  revisado_at: string | null;
+  revisado_por: string | null;
   created_at: string;
 }
 
@@ -142,6 +147,19 @@ export interface EventoAcademico {
   creado_por: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Notificacion {
+  id: string;
+  usuario_id: string;
+  curso_id: string | null;
+  evento_id: string | null;
+  tipo: EventoAcademicoTipo;
+  titulo: string;
+  mensaje: string | null;
+  enlace: string | null;
+  leida_at: string | null;
+  created_at: string;
 }
 
 export interface NotaLeccion {
@@ -178,6 +196,7 @@ export interface Database {
       certificados: Table<Certificado>;
       eventos_academicos: Table<EventoAcademico>;
       notas_leccion: Table<NotaLeccion>;
+      notificaciones: Table<Notificacion>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

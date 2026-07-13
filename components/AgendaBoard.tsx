@@ -30,7 +30,7 @@ export function AgendaBoard({ events, courses, canManage }: { events: AgendaEven
   const [showForm, setShowForm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ curso_id: courses[0]?.id ?? "", titulo: "", tipo: "evaluacion" as EventoAcademicoTipo, fecha_inicio: "", descripcion: "" });
+  const [form, setForm] = useState({ curso_id: courses[0]?.id ?? "", titulo: "", tipo: "evaluacion" as EventoAcademicoTipo, fecha_inicio: "", descripcion: "", notificar: true });
   const grouped = useMemo(() => {
     const map = new Map<string, AgendaEvent[]>();
     events.forEach((event) => { const key = dateKey(event.fecha_inicio); map.set(key, [...(map.get(key) ?? []), event]); });
@@ -44,7 +44,7 @@ export function AgendaBoard({ events, courses, canManage }: { events: AgendaEven
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setBusy(true); setError(null);
-    const { error: insertError } = await supabase.from("eventos_academicos").insert({
+    const { data: createdRaw, error: insertError } = await supabase.from("eventos_academicos").insert({
       curso_id: form.curso_id,
       titulo: form.titulo.trim(),
       tipo: form.tipo,
@@ -52,10 +52,29 @@ export function AgendaBoard({ events, courses, canManage }: { events: AgendaEven
       fecha_inicio: new Date(form.fecha_inicio).toISOString(),
       creado_por: user.id,
       updated_at: new Date().toISOString(),
-    } as never);
+    } as never).select("id").single();
+    if (insertError) { setBusy(false); setError("No se pudo publicar el evento. Revisa los datos e inténtalo de nuevo."); return; }
+    if (form.notificar && createdRaw) {
+      try {
+        const notice = await fetch("/api/notificaciones/curso", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cursoId: form.curso_id,
+            eventoId: (createdRaw as { id: string }).id,
+            tipo: form.tipo,
+            titulo: form.titulo.trim(),
+            mensaje: form.descripcion.trim() || `${TYPE[form.tipo].label} programada para ${localDateTime(new Date(form.fecha_inicio).toISOString())}.`,
+            enlace: "/agenda",
+          }),
+        });
+        if (!notice.ok) setError("El evento se publicó, pero no se pudo avisar a los alumnos.");
+      } catch {
+        setError("El evento se publicó, pero no se pudo avisar a los alumnos.");
+      }
+    }
     setBusy(false);
-    if (insertError) { setError("No se pudo publicar el evento. Revisa los datos e inténtalo de nuevo."); return; }
-    setForm({ curso_id: courses[0]?.id ?? "", titulo: "", tipo: "evaluacion", fecha_inicio: "", descripcion: "" });
+    setForm({ curso_id: courses[0]?.id ?? "", titulo: "", tipo: "evaluacion", fecha_inicio: "", descripcion: "", notificar: true });
     setShowForm(false); router.refresh();
   }
 
@@ -102,6 +121,7 @@ export function AgendaBoard({ events, courses, canManage }: { events: AgendaEven
           <input value={form.titulo} onChange={(event) => setForm({ ...form, titulo: event.target.value })} maxLength={160} required placeholder="Título: Prueba módulo 2" className="rounded-lg px-3 py-2.5 text-sm outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" }} />
           <div className="grid grid-cols-2 gap-3"><select value={form.tipo} onChange={(event) => setForm({ ...form, tipo: event.target.value as EventoAcademicoTipo })} className="rounded-lg px-3 py-2.5 text-sm outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" }}>{Object.entries(TYPE).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}</select><input type="datetime-local" value={form.fecha_inicio} onChange={(event) => setForm({ ...form, fecha_inicio: event.target.value })} required className="min-w-0 rounded-lg px-2 py-2.5 text-sm outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" }} /></div>
           <textarea value={form.descripcion} onChange={(event) => setForm({ ...form, descripcion: event.target.value })} placeholder="Temario, instrucciones o enlace de la sesión" className="min-h-24 resize-y rounded-lg px-3 py-2.5 text-sm outline-none" style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" }} />
+          <label className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}><input type="checkbox" checked={form.notificar} onChange={(event) => setForm({ ...form, notificar: event.target.checked })} className="h-4 w-4 rounded" /> Avisar a los alumnos inscritos</label>
           <button disabled={busy || !form.curso_id} className="btn-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-xs disabled:opacity-50">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarDays className="h-4 w-4" />}{busy ? "Publicando" : "Publicar evento"}</button>
         </form>}
         {error && <p className="mt-3 text-xs" style={{ color: "#b42318" }}>{error}</p>}

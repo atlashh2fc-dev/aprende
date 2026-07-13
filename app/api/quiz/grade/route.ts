@@ -21,8 +21,12 @@ export async function POST(request: Request) {
   const { quizId, respuestas = {} } = body;
   if (!quizId) return NextResponse.json({ error: "missing_quiz" }, { status: 400 });
 
-  const { data: quizRaw } = await admin.from("quizzes").select("id, curso_id, aprobacion_min").eq("id", quizId).single();
-  const quiz = quizRaw as Pick<Quiz, "id" | "curso_id" | "aprobacion_min"> | null;
+  const { data: quizRaw } = await admin
+    .from("quizzes")
+    .select("id, curso_id, aprobacion_min, fecha_limite, intentos_maximos")
+    .eq("id", quizId)
+    .single();
+  const quiz = quizRaw as Pick<Quiz, "id" | "curso_id" | "aprobacion_min" | "fecha_limite" | "intentos_maximos"> | null;
   if (!quiz) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   // Un alumno solo puede rendir evaluaciones de cursos en los que está inscrito.
@@ -34,6 +38,20 @@ export async function POST(request: Request) {
     .eq("curso_id", quiz.curso_id)
     .maybeSingle();
   if (!inscripcion) return NextResponse.json({ error: "not_enrolled" }, { status: 403 });
+
+  if (quiz.fecha_limite && new Date(quiz.fecha_limite).getTime() < Date.now()) {
+    return NextResponse.json({ error: "deadline_passed" }, { status: 403 });
+  }
+
+  const { count: intentosUsados, error: intentosError } = await admin
+    .from("quiz_intentos")
+    .select("id", { count: "exact", head: true })
+    .eq("quiz_id", quizId)
+    .eq("alumno_id", user.id);
+  if (intentosError) return NextResponse.json({ error: "attempt_check_failed" }, { status: 500 });
+  if (quiz.intentos_maximos !== null && (intentosUsados ?? 0) >= quiz.intentos_maximos) {
+    return NextResponse.json({ error: "attempt_limit_reached" }, { status: 403 });
+  }
 
   const { data: preguntasRaw } = await admin.from("quiz_preguntas").select("id").eq("quiz_id", quizId);
   const preguntas = (preguntasRaw as Pick<QuizPregunta, "id">[] | null) ?? [];
@@ -68,7 +86,13 @@ export async function POST(request: Request) {
   const aprobado = puntaje >= quiz.aprobacion_min;
 
   const intento: Partial<QuizIntento> = { alumno_id: user.id, quiz_id: quizId, puntaje, aprobado, respuestas };
-  await admin.from("quiz_intentos").insert(intento as never);
+  const { error: insertError } = await admin.from("quiz_intentos").insert(intento as never);
+  if (insertError) return NextResponse.json({ error: "attempt_save_failed" }, { status: 500 });
 
-  return NextResponse.json({ puntaje, aprobado, correctas, total: preguntas.length });
+  const usados = (intentosUsados ?? 0) + 1;
+  return NextResponse.json({
+    puntaje, aprobado, correctas, total: preguntas.length,
+    intentosUsados: usados,
+    intentosRestantes: quiz.intentos_maximos === null ? null : Math.max(quiz.intentos_maximos - usados, 0),
+  });
 }

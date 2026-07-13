@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Eye } from "lucide-react";
+import { Bell, LogOut, Eye } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
@@ -40,10 +40,11 @@ const LINKS_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
-export function AppNav({ user, isAdmin = false, viewAs }: {
+export function AppNav({ user, isAdmin = false, viewAs, unreadNotifications = 0 }: {
   user: { nombre: string | null; email: string; rol: UserRole; avatar_url: string | null; avatar_initials: string };
   isAdmin?: boolean;
   viewAs?: UserRole;
+  unreadNotifications?: number;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -114,6 +115,12 @@ export function AppNav({ user, isAdmin = false, viewAs }: {
               </select>
             </div>
           )}
+          <Link href="/notificaciones" title="Notificaciones"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl transition-all hover:-translate-y-px active:scale-95"
+            style={{ border: "1px solid var(--border-strong)", color: "var(--text-muted)", background: "var(--surface)", boxShadow: "var(--shadow-xs)" }}>
+            <Bell className="h-4 w-4" />
+            {unreadNotifications > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.58rem] font-bold" style={{ background: "var(--primary)", color: "var(--on-primary)" }}>{unreadNotifications > 9 ? "9+" : unreadNotifications}</span>}
+          </Link>
           <ThemeToggle />
           <span className="hidden text-right sm:block">
             <span className="block text-xs font-semibold leading-tight" style={{ color: "var(--text)" }}>

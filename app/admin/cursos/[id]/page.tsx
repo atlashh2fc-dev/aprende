@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, ListChecks, Layers } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, ExternalLink, ListChecks, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CursoForm } from "@/components/admin/CursoForm";
 import { LeccionesManager } from "@/components/admin/LeccionesManager";
@@ -57,12 +57,18 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
               {curso.titulo}
             </h1>
           </div>
-          {curso.estado === "publicado" && (
-            <Link href={`/cursos/${curso.slug}`}
-              className="btn-ghost inline-flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
-              <ExternalLink className="h-3.5 w-3.5" /> Ver público
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <Link href={`/profesor/cursos/${id}/calificaciones`}
+              className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
+              <ClipboardCheck className="h-3.5 w-3.5" /> Calificaciones
             </Link>
-          )}
+            {curso.estado === "publicado" && (
+              <Link href={`/cursos/${curso.slug}`}
+                className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
+                <ExternalLink className="h-3.5 w-3.5" /> Ver público
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="animate-rise rise-2">
