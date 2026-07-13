@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2 } from "lucide-react";
+import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2, CalendarDays, FileWarning, ClipboardList, Presentation, Megaphone } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { AdminCharts } from "@/components/admin/AdminCharts";
@@ -59,6 +59,7 @@ async function AlumnoView({ userId }: { userId: string }) {
   const supabase = await createClient();
   let inscritos = 0, completados = 0;
   let cursos: { id: string; slug: string; titulo: string; imagen_url: string | null; avance: number; nextHref: string }[] = [];
+  let upcoming: { id: string; titulo: string; tipo: string; fecha_inicio: string; curso: string }[] = [];
 
   if (supabase) {
     const { data } = await supabase
@@ -72,9 +73,10 @@ async function AlumnoView({ userId }: { userId: string }) {
     const base = rows.map((r) => r.cursos).filter(Boolean) as { id: string; slug: string; titulo: string; imagen_url: string | null }[];
     if (base.length) {
       const ids = base.map((c) => c.id);
-      const [{ data: leccionesRaw }, { data: progresoRaw }] = await Promise.all([
+      const [{ data: leccionesRaw }, { data: progresoRaw }, { data: eventosRaw }] = await Promise.all([
         supabase.from("lecciones").select("id, curso_id, orden").in("curso_id", ids).order("orden"),
         supabase.from("progreso_lecciones").select("curso_id, leccion_id, completada").eq("alumno_id", userId).in("curso_id", ids),
+        supabase.from("eventos_academicos").select("id, curso_id, titulo, tipo, fecha_inicio").in("curso_id", ids).gte("fecha_inicio", new Date().toISOString()).order("fecha_inicio", { ascending: true }).limit(4),
       ]);
       const lecciones = (leccionesRaw as { id: string; curso_id: string; orden: number }[] | null) ?? [];
       const progreso = (progresoRaw as { curso_id: string; leccion_id: string; completada: boolean }[] | null) ?? [];
@@ -88,6 +90,9 @@ async function AlumnoView({ userId }: { userId: string }) {
           nextHref: siguiente ? `/aprender/${siguiente.id}` : `/cursos/${curso.slug}`,
         };
       });
+      const titleByCourse = new Map(base.map((course) => [course.id, course.titulo]));
+      upcoming = ((eventosRaw as { id: string; curso_id: string; titulo: string; tipo: string; fecha_inicio: string }[] | null) ?? [])
+        .map((event) => ({ ...event, curso: titleByCourse.get(event.curso_id) ?? "Curso" }));
     }
   }
 
@@ -124,6 +129,21 @@ async function AlumnoView({ userId }: { userId: string }) {
         <StatCard icon={Trophy} label="Completados" value={completados} color="var(--accent)" />
         <StatCard icon={Clock} label="En progreso" value={cursos.length} color="#d97706" />
       </div>
+      <div className="animate-rise rise-2 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="card p-6 sm:p-7">
+          <p className="eyebrow" style={{ color: "var(--primary)" }}>Tu siguiente paso</p>
+          {cursos[0] ? <>
+            <h2 className="mt-2 font-serif-brand text-2xl font-bold tracking-tight" style={{ color: "var(--text)" }}>{cursos[0].titulo}</h2>
+            <div className="mt-4 flex items-center gap-3"><div className="progress-track h-1.5 flex-1"><div className="progress-bar h-full" style={{ width: `${cursos[0].avance}%` }} /></div><span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-faint)" }}>{cursos[0].avance}%</span></div>
+            <Link href={cursos[0].nextHref} className="btn-primary mt-6 inline-flex items-center gap-2 rounded-lg px-5 py-3 text-xs">Continuar curso <ArrowRight className="h-4 w-4" /></Link>
+          </> : <p className="mt-3 text-sm" style={{ color: "var(--text-muted)" }}>No tienes lecciones pendientes.</p>}
+        </div>
+        <div className="card overflow-hidden">
+          <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: "var(--border)" }}><div><h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>Próximos hitos</h2><p className="mt-0.5 text-xs" style={{ color: "var(--text-faint)" }}>De tus cursos</p></div><CalendarDays className="h-4 w-4" style={{ color: "var(--primary)" }} /></div>
+          {upcoming.length === 0 ? <p className="px-5 py-6 text-xs leading-relaxed" style={{ color: "var(--text-faint)" }}>No hay evaluaciones, entregas ni sesiones próximas.</p> : <div className="divide-y" style={{ borderColor: "var(--border)" }}>{upcoming.map((event) => <UpcomingEvent key={event.id} event={event} />)}</div>}
+          <Link href="/agenda" className="block border-t px-5 py-3 text-xs font-semibold" style={{ color: "var(--primary)", borderColor: "var(--border)" }}>Ver agenda completa</Link>
+        </div>
+      </div>
       <div className="animate-rise rise-2">
         <div className="mb-4 flex items-center justify-between">
           <SectionTitle>Continuar aprendiendo</SectionTitle>
@@ -156,6 +176,12 @@ async function AlumnoView({ userId }: { userId: string }) {
       </div>
     </div>
   );
+}
+
+function UpcomingEvent({ event }: { event: { titulo: string; tipo: string; fecha_inicio: string; curso: string } }) {
+  const icon = event.tipo === "evaluacion" ? FileWarning : event.tipo === "entrega" ? ClipboardList : event.tipo === "sesion" ? Presentation : Megaphone;
+  const Icon = icon;
+  return <div className="flex items-start gap-3 px-5 py-3.5"><span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--primary-dim)", color: "var(--primary)" }}><Icon className="h-3.5 w-3.5" /></span><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: "var(--text)" }}>{event.titulo}</p><p className="mt-0.5 truncate text-[0.68rem]" style={{ color: "var(--text-faint)" }}>{event.curso} · {new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "short" }).format(new Date(event.fecha_inicio))}</p></div></div>;
 }
 
 /* ── PROFESOR ───────────────────────────────────────────── */

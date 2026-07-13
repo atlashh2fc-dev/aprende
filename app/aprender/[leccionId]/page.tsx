@@ -7,6 +7,7 @@ import { QuizTaker } from "@/components/QuizTaker";
 import { MarcarCompletada } from "@/components/MarcarCompletada";
 import { TutorChat } from "@/components/TutorChat";
 import { CertificadoButton } from "@/components/CertificadoButton";
+import { LessonNotes } from "@/components/LessonNotes";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Leccion, Curso, Quiz, QuizPregunta, QuizOpcion } from "@/lib/supabase/database.types";
@@ -45,15 +46,24 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
   const siguiente = idx >= 0 && idx < hermanas.length - 1 ? hermanas[idx + 1] : null;
 
   // Progreso real: lecciones completadas por el alumno en este curso.
-  const { data: progRaw } = await supabase
-    .from("progreso_lecciones")
-    .select("leccion_id, completada")
-    .eq("alumno_id", user.id)
-    .eq("curso_id", leccion.curso_id);
+  const [{ data: progRaw }, { data: noteRaw }] = await Promise.all([
+    supabase
+      .from("progreso_lecciones")
+      .select("leccion_id, completada")
+      .eq("alumno_id", user.id)
+      .eq("curso_id", leccion.curso_id),
+    supabase
+      .from("notas_leccion")
+      .select("contenido")
+      .eq("alumno_id", user.id)
+      .eq("leccion_id", leccion.id)
+      .maybeSingle(),
+  ]);
   const progRows = (progRaw as { leccion_id: string; completada: boolean }[] | null) ?? [];
   const completadas = new Set(progRows.filter((p) => p.completada).map((p) => p.leccion_id));
   const estaCompletada = completadas.has(leccion.id);
   const progreso = hermanas.length > 0 ? Math.round((completadas.size / hermanas.length) * 100) : 0;
+  const initialNote = (noteRaw as { contenido: string } | null)?.contenido ?? "";
 
   // Quiz (si la lección es de tipo quiz). Se seleccionan opciones SIN es_correcta.
   let quiz: { id: string; titulo: string; preguntas: { id: string; enunciado: string; tipo: "unica" | "multiple"; opciones: { id: string; texto: string }[] }[] } | null = null;
@@ -80,7 +90,7 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
 
   return (
     <AppShell user={user}>
-      <div className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-12">
+      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12">
         <div className="animate-rise">
           {curso && (
             <Link href={`/cursos/${curso.slug}`}
@@ -120,7 +130,9 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
           )}
         </div>
 
-        <div className="animate-rise rise-2 mt-7">
+        <div className="mt-7 grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0">
+        <div className="animate-rise rise-2">
           {leccion.tipo === "video" && leccion.video_url && (
             <ContentRenderer url={leccion.video_url} titulo={leccion.titulo} />
           )}
@@ -141,6 +153,10 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
           )}
         </div>
 
+        <div className="animate-rise rise-2 mt-7">
+          <LessonNotes cursoId={leccion.curso_id} leccionId={leccion.id} initialContent={initialNote} />
+        </div>
+
         {/* Marcar completada */}
         <div className="animate-rise rise-2 mt-7">
           <MarcarCompletada
@@ -156,11 +172,6 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
               <div className="mt-3"><CertificadoButton cursoId={leccion.curso_id} /></div>
             </div>
           )}
-        </div>
-
-        {/* Tutor IA del curso */}
-        <div className="animate-rise rise-3 mt-7">
-          <TutorChat cursoId={leccion.curso_id} cursoTitulo={curso?.titulo} />
         </div>
 
         {/* Navegación entre lecciones */}
@@ -189,6 +200,11 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
             )}
           </div>
         )}
+          </div>
+          <div className="animate-rise rise-3 xl:sticky xl:top-24">
+            <TutorChat cursoId={leccion.curso_id} cursoTitulo={curso?.titulo} />
+          </div>
+        </div>
       </div>
     </AppShell>
   );

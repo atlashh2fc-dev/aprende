@@ -8,6 +8,7 @@ export type CursoEstado = "borrador" | "publicado" | "archivado";
 export type LeccionTipo = "video" | "texto" | "quiz";
 export type InscripcionEstado = "activa" | "completada" | "cancelada";
 export type PreguntaTipo = "unica" | "multiple";
+export type EventoAcademicoTipo = "evaluacion" | "entrega" | "sesion" | "aviso";
 
 export interface Institucion {
   id: string;
@@ -130,6 +131,29 @@ export interface Certificado {
   emitido_at: string;
 }
 
+export interface EventoAcademico {
+  id: string;
+  curso_id: string;
+  titulo: string;
+  tipo: EventoAcademicoTipo;
+  descripcion: string | null;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  creado_por: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotaLeccion {
+  id: string;
+  alumno_id: string;
+  curso_id: string;
+  leccion_id: string;
+  contenido: string;
+  created_at: string;
+  updated_at: string;
+}
+
 type Table<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -152,6 +176,8 @@ export interface Database {
       progreso_lecciones: Table<ProgresoLeccion>;
       quiz_intentos: Table<QuizIntento>;
       certificados: Table<Certificado>;
+      eventos_academicos: Table<EventoAcademico>;
+      notas_leccion: Table<NotaLeccion>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
