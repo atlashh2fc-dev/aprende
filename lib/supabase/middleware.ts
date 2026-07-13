@@ -8,6 +8,7 @@ import type { Database } from "./database.types";
 
 export async function updateSupabaseSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const embeddedDemo = request.cookies.get("geimser-demo-embed")?.value === "1";
 
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,9 +21,10 @@ export async function updateSupabaseSession(request: NextRequest) {
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
-          );
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, {
+            ...(options as Parameters<typeof supabaseResponse.cookies.set>[2]),
+            ...(embeddedDemo ? { sameSite: "none" as const, secure: true, partitioned: true } : {}),
+          }));
         },
       },
     }
