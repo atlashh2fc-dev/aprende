@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, ListChecks } from "lucide-react";
+import { ArrowLeft, ExternalLink, ListChecks, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CursoForm } from "@/components/admin/CursoForm";
 import { LeccionesManager } from "@/components/admin/LeccionesManager";
+import { ModulosManager } from "@/components/admin/ModulosManager";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Curso, Leccion } from "@/lib/supabase/database.types";
+import type { Curso, Leccion, Modulo } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,18 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
     .eq("curso_id", id)
     .order("orden", { ascending: true });
   const lecciones = (leccionesRaw as Leccion[] | null) ?? [];
+
+  const { data: modulosRaw } = await supabase
+    .from("modulos")
+    .select("*")
+    .eq("curso_id", id)
+    .order("orden", { ascending: true });
+  const modulos = (modulosRaw as Modulo[] | null) ?? [];
+
+  const leccionesPorModulo: Record<string, number> = {};
+  lecciones.forEach((l) => {
+    if (l.modulo_id) leccionesPorModulo[l.modulo_id] = (leccionesPorModulo[l.modulo_id] ?? 0) + 1;
+  });
 
   return (
     <AppShell user={user}>
@@ -58,12 +71,22 @@ export default async function EditarCursoPage({ params }: { params: Promise<{ id
 
         <div className="animate-rise rise-3 mt-10">
           <div className="mb-4 flex items-center gap-2">
+            <Layers className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+              Módulos ({modulos.length})
+            </h2>
+          </div>
+          <ModulosManager cursoId={curso.id} modulos={modulos} leccionesPorModulo={leccionesPorModulo} />
+        </div>
+
+        <div className="animate-rise rise-4 mt-10">
+          <div className="mb-4 flex items-center gap-2">
             <ListChecks className="h-4 w-4" style={{ color: "var(--primary)" }} />
             <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
               Lecciones ({lecciones.length})
             </h2>
           </div>
-          <LeccionesManager cursoId={curso.id} lecciones={lecciones} />
+          <LeccionesManager cursoId={curso.id} lecciones={lecciones} modulos={modulos} />
         </div>
       </div>
     </AppShell>

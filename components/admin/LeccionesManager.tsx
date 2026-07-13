@@ -20,7 +20,9 @@ const TIPOS: { value: LeccionTipo; label: string; icon: typeof Video }[] = [
 const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-colors";
 const inputStyle = { background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text)" } as const;
 
-export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecciones: Leccion[] }) {
+export function LeccionesManager({ cursoId, lecciones, modulos = [] }: {
+  cursoId: string; lecciones: Leccion[]; modulos?: { id: string; titulo: string }[];
+}) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -31,6 +33,7 @@ export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecc
   const [videoUrl, setVideoUrl] = useState("");
   const [contenido, setContenido] = useState("");
   const [duracion, setDuracion] = useState(0);
+  const [moduloId, setModuloId] = useState("");
 
   const nextOrden = lecciones.length ? Math.max(...lecciones.map((l) => l.orden)) + 1 : 0;
 
@@ -48,12 +51,23 @@ export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecc
       contenido: tipo === "texto" ? contenido.trim() || null : null,
       duracion_min: Number(duracion) || 0,
       orden: nextOrden,
+      modulo_id: moduloId || null,
     };
     setAdding(true);
     const { error } = await supabase.from("lecciones").insert(payload as never);
     setAdding(false);
     if (error) { setError(error.message); return; }
-    setTitulo(""); setVideoUrl(""); setContenido(""); setDuracion(0); setTipo("video");
+    setTitulo(""); setVideoUrl(""); setContenido(""); setDuracion(0); setTipo("video"); setModuloId("");
+    router.refresh();
+  }
+
+  async function assignModulo(leccionId: string, value: string) {
+    setBusy(leccionId); setError(null);
+    const supabase = createClient();
+    if (!supabase) { setBusy(null); return; }
+    const { error } = await supabase.from("lecciones").update({ modulo_id: value || null } as never).eq("id", leccionId);
+    setBusy(null);
+    if (error) { setError(error.message); return; }
     router.refresh();
   }
 
@@ -92,6 +106,16 @@ export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecc
                       {T.label}{l.duracion_min ? ` · ${l.duracion_min} min` : ""}
                     </p>
                   </div>
+                  {modulos.length > 0 && (
+                    <select value={l.modulo_id ?? ""} disabled={busy === l.id}
+                      onChange={(e) => assignModulo(l.id, e.target.value)}
+                      className="hidden shrink-0 rounded-lg px-2 py-1.5 text-xs sm:block"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)", color: "var(--text-muted)" }}
+                      title="Módulo">
+                      <option value="">Sin módulo</option>
+                      {modulos.map((m) => <option key={m.id} value={m.id}>{m.titulo}</option>)}
+                    </select>
+                  )}
                   {l.tipo === "quiz" && (
                     <Link href={`/admin/cursos/${cursoId}/leccion/${l.id}/quiz`}
                       className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
@@ -147,9 +171,20 @@ export function LeccionesManager({ cursoId, lecciones }: { cursoId: string; lecc
             </p>
           )}
 
-          <div className="w-40">
-            <input type="number" min={0} className={inputCls} style={inputStyle} value={duracion}
-              onChange={(e) => setDuracion(Number(e.target.value))} placeholder="Duración (min)" />
+          <div className="flex flex-wrap gap-4">
+            <div className="w-40">
+              <input type="number" min={0} className={inputCls} style={inputStyle} value={duracion}
+                onChange={(e) => setDuracion(Number(e.target.value))} placeholder="Duración (min)" />
+            </div>
+            {modulos.length > 0 && (
+              <div className="min-w-48 flex-1">
+                <select value={moduloId} onChange={(e) => setModuloId(e.target.value)}
+                  className={inputCls} style={inputStyle}>
+                  <option value="">Sin módulo</option>
+                  {modulos.map((m) => <option key={m.id} value={m.id}>{m.titulo}</option>)}
+                </select>
+              </div>
+            )}
           </div>
 
           {error && (

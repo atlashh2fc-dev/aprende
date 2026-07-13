@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, PlayCircle, FileText, HelpCircle } from "lucide-
 import { AppShell } from "@/components/AppShell";
 import { ContentRenderer } from "@/components/ContentRenderer";
 import { QuizTaker } from "@/components/QuizTaker";
+import { MarcarCompletada } from "@/components/MarcarCompletada";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Leccion, Curso, Quiz, QuizPregunta, QuizOpcion } from "@/lib/supabase/database.types";
@@ -40,7 +41,17 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
   const idx = hermanas.findIndex((l) => l.id === leccion.id);
   const anterior = idx > 0 ? hermanas[idx - 1] : null;
   const siguiente = idx >= 0 && idx < hermanas.length - 1 ? hermanas[idx + 1] : null;
-  const progreso = hermanas.length > 0 ? Math.round(((idx + 1) / hermanas.length) * 100) : 0;
+
+  // Progreso real: lecciones completadas por el alumno en este curso.
+  const { data: progRaw } = await supabase
+    .from("progreso_lecciones")
+    .select("leccion_id, completada")
+    .eq("alumno_id", user.id)
+    .eq("curso_id", leccion.curso_id);
+  const progRows = (progRaw as { leccion_id: string; completada: boolean }[] | null) ?? [];
+  const completadas = new Set(progRows.filter((p) => p.completada).map((p) => p.leccion_id));
+  const estaCompletada = completadas.has(leccion.id);
+  const progreso = hermanas.length > 0 ? Math.round((completadas.size / hermanas.length) * 100) : 0;
 
   // Quiz (si la lección es de tipo quiz). Se seleccionan opciones SIN es_correcta.
   let quiz: { id: string; titulo: string; preguntas: { id: string; enunciado: string; tipo: "unica" | "multiple"; opciones: { id: string; texto: string }[] }[] } | null = null;
@@ -93,10 +104,16 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
             {leccion.titulo}
           </h1>
 
-          {/* Progreso dentro del curso */}
+          {/* Progreso real dentro del curso */}
           {hermanas.length > 1 && (
-            <div className="progress-track mt-4 h-1.5 w-full">
-              <div className="progress-bar h-full" style={{ width: `${progreso}%` }} />
+            <div className="mt-4">
+              <div className="mb-1.5 flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
+                <span>Avance del curso</span>
+                <span className="tabular-nums">{completadas.size}/{hermanas.length} · {progreso}%</span>
+              </div>
+              <div className="progress-track h-1.5 w-full">
+                <div className="progress-bar h-full" style={{ width: `${progreso}%` }} />
+              </div>
             </div>
           )}
         </div>
@@ -120,6 +137,11 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
                   Este quiz aún no tiene preguntas.
                 </p>
           )}
+        </div>
+
+        {/* Marcar completada */}
+        <div className="animate-rise rise-2 mt-7">
+          <MarcarCompletada leccionId={leccion.id} cursoId={leccion.curso_id} completed={estaCompletada} />
         </div>
 
         {/* Navegación entre lecciones */}
