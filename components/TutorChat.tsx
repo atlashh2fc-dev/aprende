@@ -54,17 +54,15 @@ export function TutorChat({ cursoId, cursoTitulo }: { cursoId: string; cursoTitu
 
   return (
     <aside className="card overflow-hidden" aria-label="Acompañante de estudio">
-      <div className="relative overflow-hidden px-5 pt-5">
-        <div className="absolute inset-x-0 top-0 h-24" style={{ background: "linear-gradient(145deg, var(--primary-dim), transparent)" }} />
-        <div className="relative flex items-start gap-3">
-          <span className="flex h-14 w-14 shrink-0 items-end justify-center overflow-hidden rounded-xl" style={{ background: "color-mix(in srgb, var(--primary) 13%, var(--surface))", border: "1px solid var(--border-strong)" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/avatars/study-companion.png" alt="Acompañante de estudio" className="h-[76px] w-auto max-w-none object-contain object-bottom" />
-          </span>
-          <span className="min-w-0 pt-1">
-            <span className="block text-sm font-semibold" style={{ color: "var(--text)" }}>Acompañante de estudio</span>
-            <span className="mt-0.5 block text-xs" style={{ color: "var(--text-faint)" }}>Disponible durante esta lección</span>
-          </span>
+      <div className="relative h-44 overflow-hidden px-5 py-5" style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 26%, var(--surface)), var(--surface))" }}>
+        <div className="absolute -right-14 -top-14 h-56 w-56 rounded-full blur-3xl" style={{ background: "var(--primary-glow)" }} />
+        <div className="absolute bottom-0 right-0 h-full w-[59%]" style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 12%, transparent))" }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/avatars/study-companion-bot.png" alt="Copiloto de inteligencia artificial" className="pointer-events-none absolute -right-9 -bottom-8 z-10 h-[226px] w-auto max-w-none object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,0.32)]" />
+        <div className="relative z-20 max-w-[58%]">
+          <p className="eyebrow" style={{ color: "var(--primary)" }}>A tu ritmo</p>
+          <h2 className="mt-2 font-serif-brand text-xl font-bold leading-tight" style={{ color: "var(--text)" }}>Copiloto IA</h2>
+          <p className="mt-2 text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>Disponible cuando quieras revisar una idea.</p>
         </div>
       </div>
 
