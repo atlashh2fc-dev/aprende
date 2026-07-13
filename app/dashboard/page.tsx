@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers } from "lucide-react";
+import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compass, Layers, TrendingUp, CheckCircle2, Building2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { getSessionUser, displayName } from "@/lib/auth";
@@ -210,17 +210,20 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
 }
 
 /* ── ADMIN ──────────────────────────────────────────────── */
+function pct(part: number, whole: number): number {
+  return whole > 0 ? Math.round((part / whole) * 100) : 0;
+}
+
+function Bar({ value, color = "var(--primary)" }: { value: number; color?: string }) {
+  return (
+    <div className="progress-track h-1.5 w-full">
+      <div className="progress-bar h-full" style={{ width: `${Math.min(100, value)}%`, background: color }} />
+    </div>
+  );
+}
+
 async function AdminView() {
   const supabase = await createClient();
-  let cursos = 0, alumnos = 0, profesores = 0;
-  if (supabase) {
-    const [{ count: c }, { count: a }, { count: p }] = await Promise.all([
-      supabase.from("cursos").select("*", { count: "exact", head: true }),
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("rol", "alumno"),
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("rol", "profesor"),
-    ]);
-    cursos = c ?? 0; alumnos = a ?? 0; profesores = p ?? 0;
-  }
 
   const links = [
     { href: "/admin/cursos", icon: BookOpen, title: "Cursos", desc: "Crear, publicar y archivar cursos" },
@@ -228,14 +231,140 @@ async function AdminView() {
     { href: "/admin/instituciones", icon: Inbox, title: "Instituciones", desc: "Cohortes y supervisores" },
   ];
 
+  if (!supabase) return null;
+
+  const [cursosR, leccionesR, inscR, progR, quizzesR, intentosR, profilesR, instR] = await Promise.all([
+    supabase.from("cursos").select("id, titulo, institucion_id, estado"),
+    supabase.from("lecciones").select("curso_id"),
+    supabase.from("inscripciones").select("curso_id, estado, alumno_id"),
+    supabase.from("progreso_lecciones").select("curso_id, completada"),
+    supabase.from("quizzes").select("id, curso_id"),
+    supabase.from("quiz_intentos").select("quiz_id, aprobado"),
+    supabase.from("profiles").select("rol, institucion_id"),
+    supabase.from("instituciones").select("id, nombre"),
+  ]);
+
+  const cursos = (cursosR.data as { id: string; titulo: string; institucion_id: string | null; estado: string }[] | null) ?? [];
+  const lecciones = (leccionesR.data as { curso_id: string }[] | null) ?? [];
+  const insc = (inscR.data as { curso_id: string; estado: string; alumno_id: string }[] | null) ?? [];
+  const prog = (progR.data as { curso_id: string; completada: boolean }[] | null) ?? [];
+  const quizzes = (quizzesR.data as { id: string; curso_id: string }[] | null) ?? [];
+  const intentos = (intentosR.data as { quiz_id: string; aprobado: boolean }[] | null) ?? [];
+  const profiles = (profilesR.data as { rol: string; institucion_id: string | null }[] | null) ?? [];
+  const inst = (instR.data as { id: string; nombre: string }[] | null) ?? [];
+
+  // KPIs globales
+  const totalAlumnos = profiles.filter((p) => p.rol === "alumno").length;
+  const totalProfes = profiles.filter((p) => p.rol === "profesor").length;
+  const publicados = cursos.filter((c) => c.estado === "publicado").length;
+  const finalizacion = pct(insc.filter((i) => i.estado === "completada").length, insc.length);
+  const aprobacion = pct(intentos.filter((i) => i.aprobado).length, intentos.length);
+
+  // Por curso
+  const leccionesPorCurso = new Map<string, number>();
+  lecciones.forEach((l) => leccionesPorCurso.set(l.curso_id, (leccionesPorCurso.get(l.curso_id) ?? 0) + 1));
+  const quizToCurso = new Map(quizzes.map((q) => [q.id, q.curso_id]));
+
+  const reporteCursos = cursos
+    .map((c) => {
+      const inscritos = insc.filter((i) => i.curso_id === c.id).length;
+      const completadasProg = prog.filter((p) => p.curso_id === c.id && p.completada).length;
+      const totalPosible = inscritos * (leccionesPorCurso.get(c.id) ?? 0);
+      const avance = pct(completadasProg, totalPosible);
+      const cursoIntentos = intentos.filter((i) => quizToCurso.get(i.quiz_id) === c.id);
+      const aprob = pct(cursoIntentos.filter((i) => i.aprobado).length, cursoIntentos.length);
+      return { id: c.id, titulo: c.titulo, estado: c.estado, inscritos, avance, aprob };
+    })
+    .sort((a, b) => b.inscritos - a.inscritos);
+
+  // Por institución
+  const reporteInst = inst.map((ins) => {
+    const cursoIds = new Set(cursos.filter((c) => c.institucion_id === ins.id).map((c) => c.id));
+    const alumnos = profiles.filter((p) => p.rol === "alumno" && p.institucion_id === ins.id).length;
+    const insInst = insc.filter((i) => cursoIds.has(i.curso_id));
+    const fin = pct(insInst.filter((i) => i.estado === "completada").length, insInst.length);
+    return { nombre: ins.nombre, alumnos, inscripciones: insInst.length, fin };
+  });
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={BookOpen} label="Cursos" value={cursos} color="var(--primary)" />
-        <StatCard icon={Users} label="Alumnos" value={alumnos} color="#d97706" />
-        <StatCard icon={GraduationCap} label="Profesores" value={profesores} color="var(--accent)" />
+      {/* KPIs */}
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={Users} label="Alumnos" value={totalAlumnos} color="var(--primary)" />
+        <StatCard icon={GraduationCap} label="Profesores" value={totalProfes} color="var(--accent)" />
+        <StatCard icon={BookOpen} label="Cursos publicados" value={publicados} color="#d97706" />
+        <StatCard icon={TrendingUp} label="Finalización" value={`${finalizacion}%`} color="var(--primary)" />
       </div>
+
+      {/* Reporte por curso */}
       <div className="animate-rise rise-2">
+        <div className="mb-4 flex items-center gap-2">
+          <BookOpen className="h-4 w-4" style={{ color: "var(--primary)" }} />
+          <SectionTitle>Rendimiento por curso</SectionTitle>
+        </div>
+        <div className="card overflow-hidden">
+          <div className="hidden grid-cols-[1fr_auto_140px_90px] gap-4 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider sm:grid"
+            style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}>
+            <span>Curso</span><span>Inscritos</span><span>Avance promedio</span><span>Aprob.</span>
+          </div>
+          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+            {reporteCursos.map((r) => (
+              <div key={r.id} className="grid grid-cols-2 items-center gap-2 px-5 py-3.5 sm:grid-cols-[1fr_auto_140px_90px] sm:gap-4">
+                <span className="truncate text-sm font-medium" style={{ color: "var(--text)" }}>{r.titulo}</span>
+                <span className="text-right text-sm sm:text-left" style={{ color: "var(--text-muted)" }}>{r.inscritos}</span>
+                <div className="col-span-2 sm:col-span-1">
+                  <div className="mb-1 flex justify-between text-xs" style={{ color: "var(--text-faint)" }}>
+                    <span className="sm:hidden">Avance</span><span>{r.avance}%</span>
+                  </div>
+                  <Bar value={r.avance} />
+                </div>
+                <span className="text-sm font-semibold"
+                  style={{ color: r.aprob >= 60 ? "var(--accent)" : "#d97706" }}>{r.aprob}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Reporte por institución + Aprobación */}
+      <div className="animate-rise rise-3 grid gap-4 lg:grid-cols-2">
+        <div className="card p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Building2 className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Por institución</p>
+          </div>
+          <div className="grid gap-4">
+            {reporteInst.map((r) => (
+              <div key={r.nombre}>
+                <div className="mb-1.5 flex items-baseline justify-between">
+                  <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{r.nombre}</span>
+                  <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+                    {r.alumnos} alumnos · {r.inscripciones} inscripciones
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Bar value={r.fin} color="var(--accent)" />
+                  <span className="w-10 shrink-0 text-right text-xs font-semibold" style={{ color: "var(--text-muted)" }}>{r.fin}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card flex flex-col justify-center p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" style={{ color: "var(--accent)" }} />
+            <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Aprobación de evaluaciones</p>
+          </div>
+          <p className="font-serif-brand" style={{ fontSize: "2.6rem", color: "var(--text)", lineHeight: 1 }}>{aprobacion}%</p>
+          <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+            {intentos.filter((i) => i.aprobado).length} aprobados de {intentos.length} intentos registrados.
+          </p>
+        </div>
+      </div>
+
+      {/* Accesos de gestión */}
+      <div className="animate-rise rise-4">
         <SectionTitle>Gestión</SectionTitle>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {links.map((l) => (
