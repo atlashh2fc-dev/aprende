@@ -40,9 +40,9 @@ export interface Brand {
 }
 
 /**
- * Paleta por defecto — "ejecutivo moderno":
- * claro perla + índigo profundo como primario + esmeralda de acento.
- * El modo oscuro es un slate refinado (nunca negro puro).
+ * Paleta por defecto — "institución contemporánea":
+ * papel cálido + azul tinta como color de acción + cobre como señal secundaria.
+ * El modo oscuro conserva contraste y sobriedad, sin negro puro.
  */
 const DEFAULT_BRAND: Brand = {
   name: "Aprende",
@@ -50,31 +50,31 @@ const DEFAULT_BRAND: Brand = {
   logoUrl: null,
   mode: "light",
   light: {
-    primary: "#1E9FDC",
-    primaryLight: "#56BCEB",
-    onPrimary: "#08131f",
-    accent: "#1FA877",
-    bg: "#f4f6f8",
-    surface: "#ffffff",
-    surface2: "#eaeef2",
-    border: "rgba(13,20,32,0.09)",
-    text: "#0f1524",
-    textMuted: "rgba(15,21,36,0.62)",
-    textFaint: "rgba(15,21,36,0.40)",
-    shadow: "#0f1524",
+    primary: "#124E66",
+    primaryLight: "#216B86",
+    onPrimary: "#ffffff",
+    accent: "#9A5B2B",
+    bg: "#F6F5F1",
+    surface: "#FFFDFC",
+    surface2: "#F0EFEB",
+    border: "rgba(22,37,48,0.12)",
+    text: "#162530",
+    textMuted: "rgba(22,37,48,0.68)",
+    textFaint: "rgba(22,37,48,0.46)",
+    shadow: "#162530",
   },
   dark: {
-    primary: "#4FB4EA",
-    primaryLight: "#7ACBF0",
-    onPrimary: "#06111c",
-    accent: "#34C88F",
-    bg: "#0a0f17",
-    surface: "#111925",
-    surface2: "#182231",
-    border: "rgba(215,230,245,0.10)",
-    text: "#e8eef7",
-    textMuted: "rgba(232,238,247,0.64)",
-    textFaint: "rgba(232,238,247,0.40)",
+    primary: "#77B8D0",
+    primaryLight: "#A0D3E4",
+    onPrimary: "#102631",
+    accent: "#DEA66D",
+    bg: "#10191F",
+    surface: "#17242C",
+    surface2: "#213139",
+    border: "rgba(228,238,239,0.12)",
+    text: "#EEF3F1",
+    textMuted: "rgba(238,243,241,0.68)",
+    textFaint: "rgba(238,243,241,0.46)",
     shadow: "#000000",
   },
 };

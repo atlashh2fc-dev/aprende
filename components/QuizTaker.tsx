@@ -57,7 +57,7 @@ export function QuizTaker({ quizId, titulo, preguntas }: { quizId: string; titul
   if (resultado) {
     return (
       <div className="card animate-rise p-10 text-center" style={{ boxShadow: "var(--shadow-md)" }}>
-        <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-full"
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg"
           style={{
             background: resultado.aprobado ? "var(--accent-dim)" : "rgba(239,68,68,0.1)",
             border: `2px solid ${resultado.aprobado ? "var(--accent)" : "#ef4444"}`,
@@ -72,14 +72,14 @@ export function QuizTaker({ quizId, titulo, preguntas }: { quizId: string; titul
         <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
           {resultado.correctas} de {resultado.total} correctas ·{" "}
           <strong style={{ color: resultado.aprobado ? "var(--accent)" : "#ef4444" }}>
-            {resultado.aprobado ? "¡Aprobado!" : "No aprobado"}
+            {resultado.aprobado ? "Aprobado" : "No aprobado"}
           </strong>
         </p>
         <div className="progress-track mx-auto mt-6 h-2 max-w-xs">
           <div className="progress-bar h-full"
             style={{
               width: `${resultado.puntaje}%`,
-              background: resultado.aprobado ? "linear-gradient(90deg, var(--accent), var(--primary-light))" : "#ef4444",
+              background: resultado.aprobado ? "var(--accent)" : "#ef4444",
             }} />
         </div>
         <button onClick={() => { setResultado(null); setRespuestas({}); }}

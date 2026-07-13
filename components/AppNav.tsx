@@ -88,10 +88,7 @@ export function AppNav({ user, isAdmin = false, viewAs }: {
                 >
                   {l.label}
                   {active && (
-                    <span
-                      className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full"
-                      style={{ background: "linear-gradient(90deg, var(--primary), var(--primary-light))" }}
-                    />
+                    <span className="absolute inset-x-3 -bottom-[13px] h-px" style={{ background: "var(--primary)" }} />
                   )}
                 </Link>
               );
@@ -130,7 +127,7 @@ export function AppNav({ user, isAdmin = false, viewAs }: {
           ) : (
             <span className="flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold"
               style={{
-                background: "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))",
+                background: "var(--primary-dim)",
                 color: "var(--primary)",
                 border: "1px solid var(--border-strong)",
               }}>

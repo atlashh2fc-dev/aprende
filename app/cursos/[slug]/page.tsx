@@ -72,7 +72,7 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
           <div className="animate-rise min-w-0">
             <div className="overflow-hidden rounded-2xl"
               style={{
-                background: curso.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))",
+                background: curso.imagen_url ? undefined : "var(--surface-2)",
                 aspectRatio: "21/9",
                 boxShadow: "var(--shadow-md)",
               }}>

@@ -24,15 +24,15 @@
   --text-muted: var(--brand-text-muted, rgba(15, 21, 36, 0.62));
   --text-faint: var(--brand-text-faint, rgba(15, 21, 36, 0.40));
   --shadow-color: var(--brand-shadow, #0f1524);
-  --radius: 16px;
+  --radius: 12px;
 
   --shadow-xs: 0 1px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent);
-  --shadow-sm: 0 1px 3px color-mix(in srgb, var(--shadow-color) 7%, transparent),
-    0 4px 14px color-mix(in srgb, var(--shadow-color) 6%, transparent);
-  --shadow-md: 0 2px 6px color-mix(in srgb, var(--shadow-color) 8%, transparent),
-    0 12px 32px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-  --shadow-lg: 0 4px 10px color-mix(in srgb, var(--shadow-color) 9%, transparent),
-    0 24px 56px color-mix(in srgb, var(--shadow-color) 14%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--shadow-color) 5%, transparent),
+    0 4px 12px color-mix(in srgb, var(--shadow-color) 4%, transparent);
+  --shadow-md: 0 2px 5px color-mix(in srgb, var(--shadow-color) 7%, transparent),
+    0 10px 24px color-mix(in srgb, var(--shadow-color) 7%, transparent);
+  --shadow-lg: 0 4px 10px color-mix(in srgb, var(--shadow-color) 8%, transparent),
+    0 18px 40px color-mix(in srgb, var(--shadow-color) 10%, transparent);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -93,17 +93,17 @@ body {
 
 /* ── Botones ── */
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  background: var(--primary);
   color: var(--on-primary);
   font-weight: 700;
-  letter-spacing: 0.04em;
-  box-shadow: var(--shadow-xs), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  letter-spacing: 0.01em;
+  box-shadow: var(--shadow-xs);
   transition: transform 0.18s var(--ease-out), box-shadow 0.25s var(--ease-out),
     opacity 0.2s ease;
 }
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  background: var(--primary-light);
+  box-shadow: 0 6px 16px var(--primary-glow);
 }
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
@@ -138,19 +138,17 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* Tarjeta interactiva: eleva + sombra + borde al pasar el cursor */
+/* Tarjeta interactiva: marca foco sin convertir la interfaz en un tablero de widgets. */
 .card-glass {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.25s ease, transform 0.3s var(--ease-out),
-    box-shadow 0.3s var(--ease-out);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 .card-glass:hover {
-  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
+  box-shadow: var(--shadow-md);
 }
 
 /* ── Badge / chip ── */
@@ -183,17 +181,14 @@ body {
   overflow: hidden;
 }
 .progress-bar {
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  background: var(--primary);
   border-radius: 999px;
   transition: width 0.6s var(--ease-out);
 }
 
-/* ── Gradiente de texto ── */
+/* ── Énfasis editorial ── */
 .text-gradient {
-  background: linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 60%, var(--accent) 130%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--primary);
 }
 
 /* ── Animaciones de entrada (micro-interacciones) ── */

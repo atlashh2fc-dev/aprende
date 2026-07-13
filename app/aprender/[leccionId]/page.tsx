@@ -151,7 +151,7 @@ export default async function LeccionPage({ params }: { params: Promise<{ leccio
           />
           {progreso === 100 && (
             <div className="mt-4 rounded-xl p-4" style={{ background: "var(--accent-dim)", border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)" }}>
-              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>¡Curso completado!</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Curso completado</p>
               <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>Tu certificado ya está disponible para emitir.</p>
               <div className="mt-3"><CertificadoButton cursoId={leccion.curso_id} /></div>
             </div>

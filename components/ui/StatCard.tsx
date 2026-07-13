@@ -4,9 +4,9 @@ export function StatCard({ icon: Icon, label, value, color = "var(--primary)" }:
   icon: LucideIcon; label: string; value: string | number; color?: string;
 }) {
   return (
-    <div className="card group flex items-center gap-4 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-md)]">
+    <div className="card flex items-center gap-4 p-5">
       <span
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
         style={{ background: `color-mix(in srgb, ${color} 12%, transparent)` }}
       >
         <Icon className="h-5 w-5" style={{ color }} />

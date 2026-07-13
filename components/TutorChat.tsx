@@ -5,7 +5,7 @@
  * Panel colapsable para no distraer de la lección.
  */
 import { useEffect, useRef, useState } from "react";
-import { Sparkles, Send, Loader2, ChevronDown } from "lucide-react";
+import { MessageCircleQuestion, Send, Loader2, ChevronDown } from "lucide-react";
 
 interface Msg { role: "user" | "assistant"; content: string }
 
@@ -52,12 +52,12 @@ export function TutorChat({ cursoId, cursoTitulo }: { cursoId: string; cursoTitu
       <button onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-[color:var(--surface-2)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))", color: "var(--primary)" }}>
-          <Sparkles className="h-4.5 w-4.5" />
+          style={{ background: "var(--primary-dim)", color: "var(--primary)" }}>
+          <MessageCircleQuestion className="h-4.5 w-4.5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold" style={{ color: "var(--text)" }}>Tutor IA</span>
-          <span className="block text-xs" style={{ color: "var(--text-faint)" }}>Pregunta lo que quieras sobre este curso</span>
+          <span className="block text-sm font-semibold" style={{ color: "var(--text)" }}>Asistente de estudio</span>
+          <span className="block text-xs" style={{ color: "var(--text-faint)" }}>Consulta conceptos, ejemplos o dudas de esta lección</span>
         </span>
         <ChevronDown className="h-4 w-4 shrink-0 transition-transform" style={{ color: "var(--text-faint)", transform: open ? "rotate(180deg)" : "none" }} />
       </button>
@@ -67,7 +67,7 @@ export function TutorChat({ cursoId, cursoTitulo }: { cursoId: string; cursoTitu
           <div ref={scrollRef} className="max-h-80 overflow-y-auto px-5 py-4">
             {msgs.length === 0 && (
               <p className="py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-                Hola 👋 Soy tu tutor de <strong style={{ color: "var(--text)" }}>{cursoTitulo ?? "este curso"}</strong>. ¿Qué te gustaría entender mejor?
+                Consulta al asistente sobre <strong style={{ color: "var(--text)" }}>{cursoTitulo ?? "este curso"}</strong>. Te responderá usando el contenido disponible.
               </p>
             )}
             <div className="grid gap-3">

@@ -46,7 +46,7 @@ export function MarcarCompletada({ leccionId, cursoId, completed: initial, nextH
         className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-semibold transition-all hover:-translate-y-px active:scale-[0.98] disabled:opacity-60"
         style={done
           ? { background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid color-mix(in srgb, var(--accent) 35%, transparent)" }
-          : { background: "linear-gradient(135deg, var(--primary), var(--primary-light))", color: "var(--on-primary)", boxShadow: "var(--shadow-sm)" }}>
+          : { background: "var(--primary)", color: "var(--on-primary)", boxShadow: "var(--shadow-sm)" }}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : done ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
         {busy ? "Guardando…" : done ? "Completada" : nextHref ? "Completar y continuar" : "Finalizar lección"}
       </button>

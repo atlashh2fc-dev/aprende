@@ -69,7 +69,7 @@ export default async function MisCursosPage() {
               <div key={c.slug}
                 className={`card-glass group animate-rise rise-${(i % 5) + 1} overflow-hidden`}>
                 <Link href={`/cursos/${c.slug}`} className="block aspect-[16/9] overflow-hidden"
-                  style={{ background: c.imagen_url ? undefined : "linear-gradient(135deg, var(--primary-dim), var(--accent-dim))" }}>
+                  style={{ background: c.imagen_url ? undefined : "var(--surface-2)" }}>
                   {c.imagen_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={c.imagen_url} alt={c.titulo}

@@ -43,9 +43,9 @@ export default async function LandingPage() {
             </div>
             <h1 className="mt-6 font-serif-brand"
               style={{ fontSize: "clamp(2.7rem, 5.6vw, 4.2rem)", fontWeight: 600, lineHeight: 1.02, color: "var(--text)", letterSpacing: "-0.025em" }}>
-              La formación de tu organización,
+              Conocimiento que se
               <br />
-              <em className="text-gradient">sin fricción</em>.
+              <em className="text-gradient">aplica</em>.
             </h1>
             <p className="mt-7 max-w-md text-[1.05rem] leading-relaxed" style={{ color: "var(--text-muted)" }}>
               {brand.name} reúne cursos en video, documentos, presentaciones y
@@ -80,9 +80,6 @@ export default async function LandingPage() {
 
           {/* Mockup del producto construido en CSS (no imagen) */}
           <div className="animate-rise rise-2 relative hidden select-none sm:block" aria-hidden="true">
-            <div className="pointer-events-none absolute -inset-10 rounded-full"
-              style={{ background: "radial-gradient(closest-side, var(--primary-dim) 0%, transparent 100%)" }} />
-
             {/* Ventana principal: curso en progreso */}
             <div className="card relative overflow-hidden" style={{ boxShadow: "var(--shadow-lg)" }}>
               <div className="flex items-center gap-1.5 border-b px-5 py-3.5" style={{ borderColor: "var(--border)" }}>
@@ -127,33 +124,6 @@ export default async function LandingPage() {
               </div>
             </div>
 
-            {/* Flotante: resultado de quiz */}
-            <div className="card absolute -right-6 -top-6 w-40 rotate-2 p-4 text-center transition-transform duration-500 hover:rotate-0"
-              style={{ boxShadow: "var(--shadow-lg)" }}>
-              <p className="font-serif-brand text-3xl font-bold tabular-nums" style={{ color: "var(--text)" }}>92%</p>
-              <p className="badge-accent mx-auto mt-2 w-fit rounded-full px-2.5 py-0.5 text-[0.62rem] font-bold uppercase tracking-wider">
-                Aprobado
-              </p>
-            </div>
-
-            {/* Flotante: alumnos activos */}
-            <div className="card absolute -bottom-7 -left-7 -rotate-2 p-4 transition-transform duration-500 hover:rotate-0"
-              style={{ boxShadow: "var(--shadow-lg)" }}>
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {["var(--primary)", "var(--accent)", "#d97706"].map((c, i) => (
-                    <span key={i} className="flex h-7 w-7 items-center justify-center rounded-full text-[0.6rem] font-bold"
-                      style={{ background: `color-mix(in srgb, ${c} 18%, var(--surface))`, color: c, border: "2px solid var(--surface)" }}>
-                      {["AM", "JR", "+"][i]}
-                    </span>
-                  ))}
-                </div>
-                <div>
-                  <p className="text-sm font-bold tabular-nums" style={{ color: "var(--text)" }}>128 alumnos</p>
-                  <p className="text-[0.65rem]" style={{ color: "var(--text-faint)" }}>activos esta semana</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

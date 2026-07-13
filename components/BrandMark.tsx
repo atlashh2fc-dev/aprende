@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 import { brand } from "@/lib/brand";
 
 export function BrandMark({ href = "/", compact = false }: { href?: string; compact?: boolean }) {
@@ -10,14 +9,14 @@ export function BrandMark({ href = "/", compact = false }: { href?: string; comp
         <img src={brand.logoUrl} alt={brand.name} className="h-8 w-auto" />
       ) : (
         <span
-          className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold tracking-[-0.08em]"
           style={{
-            background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+            background: "var(--primary)",
             color: "var(--on-primary)",
-            boxShadow: "0 4px 14px var(--primary-glow)",
+            boxShadow: "var(--shadow-xs)",
           }}
         >
-          <GraduationCap className="h-5 w-5" />
+          A
         </span>
       )}
       {!compact && (
