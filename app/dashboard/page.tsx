@@ -4,6 +4,7 @@ import { BookOpen, Trophy, Clock, Users, GraduationCap, Inbox, ArrowRight, Compa
 import { AppShell } from "@/components/AppShell";
 import { StatCard, SectionTitle } from "@/components/ui/StatCard";
 import { AdminCharts } from "@/components/admin/AdminCharts";
+import { ChartCard, CursosBar, ActividadArea } from "@/components/Charts";
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
@@ -124,50 +125,93 @@ async function AlumnoView({ userId }: { userId: string }) {
 /* ── PROFESOR ───────────────────────────────────────────── */
 async function ProfesorView({ userId }: { userId: string }) {
   const supabase = await createClient();
-  let cursos: Pick<Curso, "id" | "slug" | "titulo" | "estado">[] = [];
-  let inscritos = 0;
-  if (supabase) {
-    const { data } = await supabase.from("cursos").select("id, slug, titulo, estado").eq("profesor_id", userId);
-    cursos = (data as typeof cursos | null) ?? [];
-    if (cursos.length) {
-      const { count } = await supabase.from("inscripciones").select("*", { count: "exact", head: true })
-        .in("curso_id", cursos.map((c) => c.id)).eq("estado", "activa");
-      inscritos = count ?? 0;
+  if (!supabase) return null;
+
+  const { data: cursosRaw } = await supabase
+    .from("cursos").select("id, slug, titulo, estado").eq("profesor_id", userId)
+    .order("created_at", { ascending: false });
+  const cursos = (cursosRaw as Pick<Curso, "id" | "slug" | "titulo" | "estado">[] | null) ?? [];
+  const ids = cursos.map((c) => c.id);
+
+  let insc: { curso_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
+  let lecciones: { curso_id: string }[] = [];
+  let prog: { curso_id: string; completada: boolean }[] = [];
+  let quizzes: { id: string; curso_id: string }[] = [];
+  let intentos: { quiz_id: string; aprobado: boolean }[] = [];
+  if (ids.length) {
+    const [iR, lR, pR, qR] = await Promise.all([
+      supabase.from("inscripciones").select("curso_id, estado, fecha_inscripcion").in("curso_id", ids),
+      supabase.from("lecciones").select("curso_id").in("curso_id", ids),
+      supabase.from("progreso_lecciones").select("curso_id, completada").in("curso_id", ids),
+      supabase.from("quizzes").select("id, curso_id").in("curso_id", ids),
+    ]);
+    insc = (iR.data as typeof insc | null) ?? [];
+    lecciones = (lR.data as typeof lecciones | null) ?? [];
+    prog = (pR.data as typeof prog | null) ?? [];
+    quizzes = (qR.data as typeof quizzes | null) ?? [];
+    if (quizzes.length) {
+      const { data: intR } = await supabase.from("quiz_intentos").select("quiz_id, aprobado").in("quiz_id", quizzes.map((q) => q.id));
+      intentos = (intR as typeof intentos | null) ?? [];
     }
   }
+
   const publicados = cursos.filter((c) => c.estado === "publicado").length;
+  const finalizacion = pct(insc.filter((i) => i.estado === "completada").length, insc.length);
+  const leccionesPorCurso = new Map<string, number>();
+  lecciones.forEach((l) => leccionesPorCurso.set(l.curso_id, (leccionesPorCurso.get(l.curso_id) ?? 0) + 1));
+  const quizToCurso = new Map(quizzes.map((q) => [q.id, q.curso_id]));
+
+  const cursosChart = cursos.map((c) => {
+    const inscritos = insc.filter((i) => i.curso_id === c.id).length;
+    const cursoInt = intentos.filter((i) => quizToCurso.get(i.quiz_id) === c.id);
+    return {
+      curso: c.titulo.length > 16 ? c.titulo.slice(0, 15) + "…" : c.titulo,
+      inscritos, aprob: pct(cursoInt.filter((i) => i.aprobado).length, cursoInt.length),
+    };
+  }).sort((a, b) => b.inscritos - a.inscritos);
+  const actividadChart = weeklyBuckets(insc.map((i) => i.fecha_inscripcion));
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={BookOpen} label="Mis cursos" value={cursos.length} color="var(--primary)" />
-        <StatCard icon={Users} label="Alumnos inscritos" value={inscritos} color="#d97706" />
+        <StatCard icon={Users} label="Inscritos" value={insc.length} color="#d97706" />
         <StatCard icon={GraduationCap} label="Publicados" value={publicados} color="var(--accent)" />
+        <StatCard icon={TrendingUp} label="Finalización" value={`${finalizacion}%`} color="var(--primary)" />
       </div>
-      <div className="animate-rise rise-2">
-        <div className="mb-4 flex items-center justify-between">
-          <SectionTitle>Mis cursos</SectionTitle>
-          <Link href="/profesor/cursos" className="btn-ghost rounded-xl px-4 py-2 text-xs">Gestionar</Link>
-        </div>
-        {cursos.length === 0 ? (
-          <p className="card p-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-            Aún no tienes cursos. Crea el primero desde{" "}
-            <Link href="/profesor/cursos" className="font-semibold" style={{ color: "var(--primary)" }}>gestión de cursos</Link>.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {cursos.map((c) => (
-              <div key={c.id}
-                className="card flex items-center justify-between gap-4 px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
-                <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</span>
-                <span className={`${c.estado === "publicado" ? "badge-accent" : "badge"} rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold capitalize`}>
-                  {c.estado}
-                </span>
-              </div>
-            ))}
+
+      {cursos.length === 0 ? (
+        <p className="card animate-rise rise-2 p-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+          Aún no tienes cursos. Crea el primero desde{" "}
+          <Link href="/profesor/cursos" className="font-semibold" style={{ color: "var(--primary)" }}>gestión de cursos</Link>.
+        </p>
+      ) : (
+        <>
+          <div className="animate-rise rise-2">
+            <ChartCard title="Inscripciones por semana"><ActividadArea data={actividadChart} /></ChartCard>
           </div>
-        )}
-      </div>
+          <div className="animate-rise rise-3">
+            <ChartCard title="Inscritos y aprobación por curso"><CursosBar data={cursosChart} /></ChartCard>
+          </div>
+          <div className="animate-rise rise-4">
+            <div className="mb-4 flex items-center justify-between">
+              <SectionTitle>Mis cursos</SectionTitle>
+              <Link href="/profesor/cursos" className="btn-ghost rounded-xl px-4 py-2 text-xs">Gestionar</Link>
+            </div>
+            <div className="card divide-y overflow-hidden" style={{ borderColor: "var(--border)" }}>
+              {cursos.map((c) => (
+                <Link key={c.id} href={`/profesor/cursos/${c.id}`}
+                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[color:var(--surface-2)]">
+                  <span className="truncate text-sm font-semibold" style={{ color: "var(--text)" }}>{c.titulo}</span>
+                  <span className={`${c.estado === "publicado" ? "badge-accent" : "badge"} shrink-0 rounded-full px-2.5 py-0.5 text-[0.7rem] font-bold capitalize`}>
+                    {c.estado}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -175,37 +219,83 @@ async function ProfesorView({ userId }: { userId: string }) {
 /* ── SUPERVISOR ─────────────────────────────────────────── */
 async function SupervisorView({ institucionId }: { institucionId: string | null }) {
   const supabase = await createClient();
-  let cursos = 0, alumnos = 0, institucion = "tu institución";
-  if (supabase && institucionId) {
-    const [{ count: c }, { count: a }, inst] = await Promise.all([
-      supabase.from("cursos").select("*", { count: "exact", head: true }).eq("institucion_id", institucionId),
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("institucion_id", institucionId).eq("rol", "alumno"),
-      supabase.from("instituciones").select("nombre").eq("id", institucionId).single(),
-    ]);
-    cursos = c ?? 0; alumnos = a ?? 0;
-    institucion = (inst.data as { nombre: string } | null)?.nombre ?? institucion;
+  if (!institucionId) {
+    return (
+      <p className="card animate-rise p-6 text-sm" style={{ color: "var(--text-muted)" }}>
+        Tu cuenta de supervisor aún no está asignada a una institución. Un administrador debe asignártela.
+      </p>
+    );
   }
+  if (!supabase) return null;
+
+  const [{ data: instRaw }, { count: alumnosCount }, { data: cursosRaw }] = await Promise.all([
+    supabase.from("instituciones").select("nombre").eq("id", institucionId).single(),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("institucion_id", institucionId).eq("rol", "alumno"),
+    supabase.from("cursos").select("id, titulo, estado").eq("institucion_id", institucionId).order("created_at", { ascending: false }),
+  ]);
+  const institucion = (instRaw as { nombre: string } | null)?.nombre ?? "tu institución";
+  const alumnos = alumnosCount ?? 0;
+  const cursos = (cursosRaw as Pick<Curso, "id" | "titulo" | "estado">[] | null) ?? [];
+  const ids = cursos.map((c) => c.id);
+
+  let insc: { curso_id: string; estado: string; fecha_inscripcion: string | null }[] = [];
+  let quizzes: { id: string; curso_id: string }[] = [];
+  let intentos: { quiz_id: string; aprobado: boolean }[] = [];
+  if (ids.length) {
+    const [iR, qR] = await Promise.all([
+      supabase.from("inscripciones").select("curso_id, estado, fecha_inscripcion").in("curso_id", ids),
+      supabase.from("quizzes").select("id, curso_id").in("curso_id", ids),
+    ]);
+    insc = (iR.data as typeof insc | null) ?? [];
+    quizzes = (qR.data as typeof quizzes | null) ?? [];
+    if (quizzes.length) {
+      const { data: intR } = await supabase.from("quiz_intentos").select("quiz_id, aprobado").in("quiz_id", quizzes.map((q) => q.id));
+      intentos = (intR as typeof intentos | null) ?? [];
+    }
+  }
+
+  const finalizacion = pct(insc.filter((i) => i.estado === "completada").length, insc.length);
+  const aprobacion = pct(intentos.filter((i) => i.aprobado).length, intentos.length);
+  const quizToCurso = new Map(quizzes.map((q) => [q.id, q.curso_id]));
+  const cursosChart = cursos.map((c) => {
+    const inscritos = insc.filter((i) => i.curso_id === c.id).length;
+    const cursoInt = intentos.filter((i) => quizToCurso.get(i.quiz_id) === c.id);
+    return {
+      curso: c.titulo.length > 16 ? c.titulo.slice(0, 15) + "…" : c.titulo,
+      inscritos, aprob: pct(cursoInt.filter((i) => i.aprobado).length, cursoInt.length),
+    };
+  }).sort((a, b) => b.inscritos - a.inscritos);
+  const actividadChart = weeklyBuckets(insc.map((i) => i.fecha_inscripcion));
 
   return (
     <div className="flex flex-col gap-6">
-      {!institucionId && (
-        <p className="card animate-rise p-6 text-sm" style={{ color: "var(--text-muted)" }}>
-          Tu cuenta de supervisor aún no está asignada a una institución. Un administrador debe asignártela.
-        </p>
-      )}
-      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={Layers} label="Cursos de la institución" value={cursos} color="var(--primary)" />
+      <div className="animate-rise rise-1 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={Layers} label="Cursos" value={cursos.length} color="var(--primary)" />
         <StatCard icon={Users} label="Alumnos" value={alumnos} color="#d97706" />
-        <StatCard icon={GraduationCap} label="Institución" value={institucion} color="var(--accent)" />
+        <StatCard icon={TrendingUp} label="Finalización" value={`${finalizacion}%`} color="var(--accent)" />
+        <StatCard icon={GraduationCap} label="Aprobación" value={`${aprobacion}%`} color="var(--primary)" />
       </div>
-      <div className="animate-rise rise-2">
-        <SectionTitle>Supervisión</SectionTitle>
-        <p className="card mt-3 p-6 text-sm" style={{ color: "var(--text-muted)" }}>
-          Vista de solo lectura del avance de <strong style={{ color: "var(--text)" }}>{institucion}</strong>.
-          El detalle por alumno y curso se gestiona en{" "}
-          <Link href="/supervisor" className="font-semibold" style={{ color: "var(--primary)" }}>Mi institución</Link>.
+
+      <div className="animate-rise rise-2 mb-1">
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Avance de <strong style={{ color: "var(--text)" }}>{institucion}</strong>.
         </p>
       </div>
+
+      {ids.length === 0 ? (
+        <p className="card p-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+          Aún no hay cursos asignados a esta institución.
+        </p>
+      ) : (
+        <>
+          <div className="animate-rise rise-2">
+            <ChartCard title="Inscripciones por semana"><ActividadArea data={actividadChart} /></ChartCard>
+          </div>
+          <div className="animate-rise rise-3">
+            <ChartCard title="Inscritos y aprobación por curso"><CursosBar data={cursosChart} /></ChartCard>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -213,6 +303,21 @@ async function SupervisorView({ institucionId }: { institucionId: string | null 
 /* ── ADMIN ──────────────────────────────────────────────── */
 function pct(part: number, whole: number): number {
   return whole > 0 ? Math.round((part / whole) * 100) : 0;
+}
+
+function weeklyBuckets(dates: (string | null)[], weeks = 8): { semana: string; inscripciones: number }[] {
+  const MS_WEEK = 7 * 24 * 3600 * 1000;
+  const now = Date.now();
+  const buckets = new Array(weeks).fill(0);
+  dates.forEach((d) => {
+    if (!d) return;
+    const wa = Math.floor((now - new Date(d).getTime()) / MS_WEEK);
+    if (wa >= 0 && wa < weeks) buckets[weeks - 1 - wa]++;
+  });
+  return buckets.map((n, idx) => ({
+    semana: new Date(now - (weeks - 1 - idx) * MS_WEEK).toLocaleDateString("es-CL", { day: "2-digit", month: "short" }),
+    inscripciones: n,
+  }));
 }
 
 function Bar({ value, color = "var(--primary)" }: { value: number; color?: string }) {
