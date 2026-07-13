@@ -8,6 +8,31 @@ export const runtime = "nodejs";
 
 const DEMO_EMAIL = "admin.demo@aprende.dev";
 
+async function ensureDemoUser(admin: NonNullable<ReturnType<typeof createAdminClient>>) {
+  const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (listError) throw listError;
+
+  let user = listed.users.find((candidate) => candidate.email?.toLowerCase() === DEMO_EMAIL);
+  if (!user) {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: DEMO_EMAIL,
+      email_confirm: true,
+      user_metadata: { full_name: "Demo Comercial Geimser" },
+    });
+    if (error || !data.user) throw error ?? new Error("No fue posible crear la cuenta demo.");
+    user = data.user;
+  }
+
+  const { error: profileError } = await admin.from("profiles").upsert({
+    id: user.id,
+    email: DEMO_EMAIL,
+    nombre: "Demo Comercial",
+    apellido: "Geimser",
+    rol: "admin",
+  } as never, { onConflict: "id" });
+  if (profileError) throw profileError;
+}
+
 async function validateTicket(ticket: string) {
   const response = await fetch("https://www.geimser.cl/api/experience/demo-ticket", {
     method: "POST",
@@ -31,10 +56,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "El demo no está configurado." }, { status: 503 });
   }
 
-  const { data: link, error: linkError } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email: DEMO_EMAIL,
-  });
+  try {
+    await ensureDemoUser(admin);
+  } catch {
+    return NextResponse.json({ error: "La cuenta demo no está disponible." }, { status: 503 });
+  }
+
+  const { data: link, error: linkError } = await admin.auth.admin.generateLink({ type: "magiclink", email: DEMO_EMAIL });
   const tokenHash = link?.properties?.hashed_token;
   if (linkError || !tokenHash) {
     return NextResponse.json({ error: "La cuenta demo no está disponible." }, { status: 503 });
