@@ -33,12 +33,17 @@ export default async function AdminUsuariosPage() {
   return (
     <AppShell user={user}>
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-12">
-        <div className="animate-rise mb-8">
-          <p className="eyebrow" style={{ color: "var(--primary)" }}>Administración</p>
-          <SectionTitle>Usuarios</SectionTitle>
-          <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            Cambia roles, empresa y áreas de capacitación. {users.length} cuentas registradas.
-          </p>
+        <div className="animate-rise mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="eyebrow" style={{ color: "var(--primary)" }}>Administración</p>
+            <SectionTitle>Usuarios</SectionTitle>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
+              Cambia roles, empresa y áreas de capacitación. {users.length} cuentas registradas.
+            </p>
+          </div>
+          <Link href="/admin/areas" className="btn-primary inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs">
+            <Building2 className="h-4 w-4" /> Gestionar áreas
+          </Link>
         </div>
         <div className="animate-rise rise-2">
           <UsuariosManager users={users} instituciones={instituciones} areas={areas} currentUserId={user.id} />
@@ -47,3 +52,5 @@ export default async function AdminUsuariosPage() {
     </AppShell>
   );
 }
+import Link from "next/link";
+import { Building2 } from "lucide-react";

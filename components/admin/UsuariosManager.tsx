@@ -110,7 +110,7 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
 
       {/* Tabla */}
       <div className="card overflow-hidden">
-        <div className="hidden grid-cols-[1fr_125px_1fr_1fr_28px] gap-4 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider sm:grid"
+        <div className="hidden grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_28px] gap-3 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider md:grid"
           style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}>
           <span>Usuario</span><span>Rol</span><span>Institución</span><span>Áreas / unidades</span><span />
         </div>
@@ -118,7 +118,7 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
           {filtered.map((u) => {
             const isSelf = u.id === currentUserId;
             return (
-              <div key={u.id} className="grid grid-cols-1 gap-3 px-5 py-3.5 sm:grid-cols-[1fr_125px_1fr_1fr_28px] sm:items-center sm:gap-4">
+              <div key={u.id} className="grid grid-cols-1 gap-3 px-5 py-3.5 md:grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_28px] md:items-center md:gap-3">
                 {/* Usuario */}
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold"
@@ -138,8 +138,8 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
                 </div>
 
                 {/* Rol */}
-                <div className="flex items-center gap-2">
-                  <select className={selCls} style={selStyle} value={u.rol} disabled={isSelf || busy === u.id}
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <select className={`${selCls} min-w-0`} style={selStyle} value={u.rol} disabled={isSelf || busy === u.id}
                     onChange={(e) => patch(u.id, { rol: e.target.value as UserRole })}
                     title={isSelf ? "No puedes cambiar tu propio rol" : undefined}>
                     {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
@@ -157,7 +157,7 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
                 <AreaPicker user={u} areas={areas.filter((area) => area.institucion_id === u.institucion_id)} disabled={busy === u.id}
                   onChange={(areaIds) => patchAreas(u.id, areaIds)} />
 
-                <span className="hidden justify-self-end sm:block">
+                <span className="hidden justify-self-end md:block">
                   {busy === u.id && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--primary)" }} />}
                 </span>
               </div>
@@ -180,7 +180,7 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
 
 function AreaPicker({ user, areas, disabled, onChange }: { user: UserRow; areas: AreaOption[]; disabled: boolean; onChange: (ids: string[]) => void }) {
   const selected = areas.filter((area) => user.area_ids.includes(area.id));
-  return <details className="relative"><summary className={`${selCls} block cursor-pointer list-none truncate`} style={selStyle}>{selected.length ? selected.map((area) => area.nombre).join(", ") : "— Sin áreas —"}</summary><div className="absolute right-0 z-20 mt-2 grid min-w-56 gap-2 rounded-xl p-3 shadow-lg" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>{areas.length ? areas.map((area) => { const checked = user.area_ids.includes(area.id); return <label key={area.id} className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}><input type="checkbox" checked={checked} disabled={disabled} onChange={() => onChange(checked ? user.area_ids.filter((id) => id !== area.id) : [...user.area_ids, area.id])} />{area.nombre}</label>; }) : <p className="text-xs" style={{ color: "var(--text-faint)" }}>Primero crea áreas para esta institución.</p>}</div></details>;
+  return <details className="relative min-w-0"><summary className={`${selCls} block w-full cursor-pointer list-none truncate`} style={selStyle}>{selected.length ? selected.map((area) => area.nombre).join(", ") : "— Sin áreas —"}</summary><div className="absolute right-0 z-20 mt-2 grid min-w-56 gap-2 rounded-xl p-3 shadow-lg" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>{areas.length ? areas.map((area) => { const checked = user.area_ids.includes(area.id); return <label key={area.id} className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}><input type="checkbox" checked={checked} disabled={disabled} onChange={() => onChange(checked ? user.area_ids.filter((id) => id !== area.id) : [...user.area_ids, area.id])} />{area.nombre}</label>; }) : <p className="text-xs" style={{ color: "var(--text-faint)" }}>Primero crea áreas para esta institución.</p>}</div></details>;
 }
 
 function FilterChip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
