@@ -4,7 +4,7 @@
  * Mantenedor de usuarios (admin): buscar, filtrar por rol, cambiar rol y
  * asignar institución. Escribe a `profiles` con RLS de admin (is_admin()).
  */
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Search, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -13,9 +13,10 @@ import type { UserRole } from "@/lib/supabase/database.types";
 
 export interface UserRow {
   id: string; email: string; nombre: string | null; apellido: string | null;
-  avatar_url: string | null; rol: UserRole; institucion_id: string | null;
+  avatar_url: string | null; rol: UserRole; institucion_id: string | null; area_ids: string[];
 }
 export interface Inst { id: string; nombre: string }
+export interface AreaOption { id: string; nombre: string; institucion_id: string; tipo: string }
 
 const ROLES: UserRole[] = ["alumno", "profesor", "supervisor", "admin"];
 const selCls = "rounded-lg px-2.5 py-1.5 text-xs font-medium outline-none transition-colors";
@@ -29,8 +30,8 @@ function initials(u: UserRow): string {
   return n || u.email.slice(0, 2).toUpperCase();
 }
 
-export function UsuariosManager({ users: initial, instituciones, currentUserId }: {
-  users: UserRow[]; instituciones: Inst[]; currentUserId: string;
+export function UsuariosManager({ users: initial, instituciones, areas, currentUserId }: {
+  users: UserRow[]; instituciones: Inst[]; areas: AreaOption[]; currentUserId: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -40,24 +41,45 @@ export function UsuariosManager({ users: initial, instituciones, currentUserId }
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const instName = useMemo(() => new Map(instituciones.map((i) => [i.id, i.nombre])), [instituciones]);
-
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     const term = q.trim().toLowerCase();
     return users.filter((u) => {
       if (rolFilter !== "todos" && u.rol !== rolFilter) return false;
       if (!term) return true;
       return fullName(u).toLowerCase().includes(term) || u.email.toLowerCase().includes(term);
     });
-  }, [users, q, rolFilter]);
+  })();
 
   async function patch(id: string, patch: Partial<Pick<UserRow, "rol" | "institucion_id">>) {
     if (!supabase) return;
     setBusy(id); setError(null);
     const { error } = await supabase.from("profiles").update(patch as never).eq("id", id);
+    if (error) { setBusy(null); setError(error.message); return; }
+    const before = users.find((user) => user.id === id);
+    const validAreaIds = "institucion_id" in patch
+      ? new Set(areas.filter((area) => area.institucion_id === patch.institucion_id).map((area) => area.id))
+      : null;
+    const remainingAreaIds = validAreaIds && before ? before.area_ids.filter((areaId) => validAreaIds.has(areaId)) : before?.area_ids;
+    if (validAreaIds && before && remainingAreaIds!.length !== before.area_ids.length) {
+      const { error: areasError } = await supabase.from("profile_areas").delete().eq("profile_id", id).in("area_id", before.area_ids.filter((areaId) => !validAreaIds.has(areaId)));
+      if (areasError) { setBusy(null); setError(areasError.message); return; }
+    }
     setBusy(null);
-    if (error) { setError(error.message); return; }
-    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch, ...(remainingAreaIds ? { area_ids: remainingAreaIds } : {}) } : u)));
+    router.refresh();
+  }
+
+  async function patchAreas(id: string, areaIds: string[]) {
+    if (!supabase) return;
+    setBusy(id); setError(null);
+    const { error: removeError } = await supabase.from("profile_areas").delete().eq("profile_id", id);
+    if (removeError) { setBusy(null); setError(removeError.message); return; }
+    if (areaIds.length) {
+      const { error: addError } = await supabase.from("profile_areas").insert(areaIds.map((area_id) => ({ profile_id: id, area_id })) as never);
+      if (addError) { setBusy(null); setError(addError.message); return; }
+    }
+    setBusy(null);
+    setUsers((prev) => prev.map((user) => user.id === id ? { ...user, area_ids: areaIds } : user));
     router.refresh();
   }
 
@@ -88,15 +110,15 @@ export function UsuariosManager({ users: initial, instituciones, currentUserId }
 
       {/* Tabla */}
       <div className="card overflow-hidden">
-        <div className="hidden grid-cols-[1fr_150px_1fr_28px] gap-4 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider sm:grid"
+        <div className="hidden grid-cols-[1fr_125px_1fr_1fr_28px] gap-4 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider sm:grid"
           style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}>
-          <span>Usuario</span><span>Rol</span><span>Institución</span><span />
+          <span>Usuario</span><span>Rol</span><span>Institución</span><span>Áreas / unidades</span><span />
         </div>
         <div className="divide-y" style={{ borderColor: "var(--border)" }}>
           {filtered.map((u) => {
             const isSelf = u.id === currentUserId;
             return (
-              <div key={u.id} className="grid grid-cols-1 gap-3 px-5 py-3.5 sm:grid-cols-[1fr_150px_1fr_28px] sm:items-center sm:gap-4">
+              <div key={u.id} className="grid grid-cols-1 gap-3 px-5 py-3.5 sm:grid-cols-[1fr_125px_1fr_1fr_28px] sm:items-center sm:gap-4">
                 {/* Usuario */}
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold"
@@ -132,6 +154,9 @@ export function UsuariosManager({ users: initial, instituciones, currentUserId }
                   {instituciones.map((i) => <option key={i.id} value={i.id}>{i.nombre}</option>)}
                 </select>
 
+                <AreaPicker user={u} areas={areas.filter((area) => area.institucion_id === u.institucion_id)} disabled={busy === u.id}
+                  onChange={(areaIds) => patchAreas(u.id, areaIds)} />
+
                 <span className="hidden justify-self-end sm:block">
                   {busy === u.id && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--primary)" }} />}
                 </span>
@@ -147,10 +172,15 @@ export function UsuariosManager({ users: initial, instituciones, currentUserId }
       </div>
 
       <p className="text-xs" style={{ color: "var(--text-faint)" }}>
-        Los cambios de rol e institución se aplican al instante. {instName.size} instituciones disponibles.
+        Los cambios de rol, institución y área se aplican al instante. Al asignar un área, la persona recibe automáticamente sus capacitaciones.
       </p>
     </div>
   );
+}
+
+function AreaPicker({ user, areas, disabled, onChange }: { user: UserRow; areas: AreaOption[]; disabled: boolean; onChange: (ids: string[]) => void }) {
+  const selected = areas.filter((area) => user.area_ids.includes(area.id));
+  return <details className="relative"><summary className={`${selCls} block cursor-pointer list-none truncate`} style={selStyle}>{selected.length ? selected.map((area) => area.nombre).join(", ") : "— Sin áreas —"}</summary><div className="absolute right-0 z-20 mt-2 grid min-w-56 gap-2 rounded-xl p-3 shadow-lg" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>{areas.length ? areas.map((area) => { const checked = user.area_ids.includes(area.id); return <label key={area.id} className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}><input type="checkbox" checked={checked} disabled={disabled} onChange={() => onChange(checked ? user.area_ids.filter((id) => id !== area.id) : [...user.area_ids, area.id])} />{area.nombre}</label>; }) : <p className="text-xs" style={{ color: "var(--text-faint)" }}>Primero crea áreas para esta institución.</p>}</div></details>;
 }
 
 function FilterChip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {

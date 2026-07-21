@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { SectionTitle } from "@/components/ui/StatCard";
 import { UsuariosManager } from "@/components/admin/UsuariosManager";
-import type { UserRow, Inst } from "@/components/admin/UsuariosManager";
+import type { AreaOption, UserRow, Inst } from "@/components/admin/UsuariosManager";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,15 +13,21 @@ export default async function AdminUsuariosPage() {
 
   let users: UserRow[] = [];
   let instituciones: Inst[] = [];
+  let areas: AreaOption[] = [];
   if (supabase) {
-    const [uR, iR] = await Promise.all([
+    const [uR, iR, aR, paR] = await Promise.all([
       supabase.from("profiles")
         .select("id, email, nombre, apellido, avatar_url, rol, institucion_id")
         .order("created_at", { ascending: true }),
       supabase.from("instituciones").select("id, nombre").order("nombre"),
+      supabase.from("areas").select("id, nombre, institucion_id, tipo").order("nombre"),
+      supabase.from("profile_areas").select("profile_id, area_id"),
     ]);
-    users = (uR.data as UserRow[] | null) ?? [];
+    const memberAreas = new Map<string, string[]>();
+    ((paR.data as { profile_id: string; area_id: string }[] | null) ?? []).forEach(({ profile_id, area_id }) => memberAreas.set(profile_id, [...(memberAreas.get(profile_id) ?? []), area_id]));
+    users = ((uR.data as Omit<UserRow, "area_ids">[] | null) ?? []).map((row) => ({ ...row, area_ids: memberAreas.get(row.id) ?? [] }));
     instituciones = (iR.data as Inst[] | null) ?? [];
+    areas = (aR.data as AreaOption[] | null) ?? [];
   }
 
   return (
@@ -31,11 +37,11 @@ export default async function AdminUsuariosPage() {
           <p className="eyebrow" style={{ color: "var(--primary)" }}>Administración</p>
           <SectionTitle>Usuarios</SectionTitle>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            Cambia roles y asigna instituciones. {users.length} cuentas registradas.
+            Cambia roles, empresa y áreas de capacitación. {users.length} cuentas registradas.
           </p>
         </div>
         <div className="animate-rise rise-2">
-          <UsuariosManager users={users} instituciones={instituciones} currentUserId={user.id} />
+          <UsuariosManager users={users} instituciones={instituciones} areas={areas} currentUserId={user.id} />
         </div>
       </div>
     </AppShell>

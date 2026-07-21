@@ -38,6 +38,7 @@ const LINKS_BY_ROLE: Record<UserRole, NavLink[]> = {
     { href: "/agenda", label: "Agenda" },
     { href: "/admin/usuarios", label: "Usuarios" },
     { href: "/admin/instituciones", label: "Instituciones" },
+    { href: "/admin/areas", label: "Áreas" },
   ],
 };
 

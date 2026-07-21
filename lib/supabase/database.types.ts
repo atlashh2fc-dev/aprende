@@ -10,12 +10,35 @@ export type InscripcionEstado = "activa" | "completada" | "cancelada";
 export type PreguntaTipo = "unica" | "multiple";
 export type EventoAcademicoTipo = "evaluacion" | "entrega" | "sesion" | "aviso";
 export type EntregaEstado = "enviada" | "atrasada" | "revisada";
+export type AreaTipo = "area" | "unidad_negocio" | "campana";
 
 export interface Institucion {
   id: string;
   nombre: string;
   slug: string;
   logo_url: string | null;
+  created_at: string;
+}
+
+export interface Area {
+  id: string;
+  institucion_id: string;
+  nombre: string;
+  slug: string;
+  tipo: AreaTipo;
+  descripcion: string | null;
+  created_at: string;
+}
+
+export interface ProfileArea {
+  profile_id: string;
+  area_id: string;
+  created_at: string;
+}
+
+export interface CursoArea {
+  curso_id: string;
+  area_id: string;
   created_at: string;
 }
 
@@ -234,6 +257,9 @@ export interface Database {
   public: {
     Tables: {
       instituciones: Table<Institucion>;
+      areas: Table<Area>;
+      profile_areas: Table<ProfileArea>;
+      curso_areas: Table<CursoArea>;
       profiles: Table<Profile>;
       cursos: Table<Curso>;
       modulos: Table<Modulo>;
