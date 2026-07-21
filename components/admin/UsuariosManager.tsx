@@ -167,7 +167,28 @@ function UserEditorRow({ user, currentUserId, instituciones, areas, busy, onPatc
 
 function AreaPicker({ user, areas, disabled, onChange }: { user: UserRow; areas: AreaOption[]; disabled: boolean; onChange: (ids: string[]) => void }) {
   const selected = areas.filter((area) => user.area_ids.includes(area.id));
-  return <details className="relative min-w-0"><summary className={`${selCls} block w-full cursor-pointer list-none truncate`} style={selStyle}>{selected.length ? selected.map((area) => area.nombre).join(", ") : "— Sin áreas —"}</summary><div className="absolute right-0 z-20 mt-2 grid min-w-56 gap-2 rounded-xl p-3 shadow-lg" style={{ background: "var(--surface)", border: "1px solid var(--border-strong)" }}>{areas.length ? areas.map((area) => { const checked = user.area_ids.includes(area.id); return <label key={area.id} className="flex cursor-pointer items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}><input type="checkbox" checked={checked} disabled={disabled} onChange={() => onChange(checked ? user.area_ids.filter((id) => id !== area.id) : [...user.area_ids, area.id])} />{area.nombre}</label>; }) : <p className="text-xs" style={{ color: "var(--text-faint)" }}>Primero crea áreas para esta institución.</p>}</div></details>;
+  return (
+    <details className="min-w-0">
+      <summary className={`${selCls} flex w-full cursor-pointer list-none items-center justify-between gap-2`} style={selStyle}>
+        <span className="truncate">{selected.length ? selected.map((area) => area.nombre).join(", ") : "— Sin áreas —"}</span>
+        <span className="shrink-0 text-[0.65rem] font-bold uppercase tracking-wide" style={{ color: "var(--primary)" }}>Editar</span>
+      </summary>
+      <div className="mt-2 rounded-xl p-3" style={{ background: "var(--surface-2)", border: "1px solid var(--border-strong)" }}>
+        {areas.length ? (
+          <div className="grid gap-2">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>Selecciona una o más áreas</p>
+            {areas.map((area) => {
+              const checked = user.area_ids.includes(area.id);
+              return <label key={area.id} className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs transition-colors" style={{ background: checked ? "var(--primary-dim)" : "var(--surface)", color: checked ? "var(--primary)" : "var(--text-muted)" }}>
+                <span className="truncate font-medium">{area.nombre}</span>
+                <input type="checkbox" checked={checked} disabled={disabled} onChange={() => onChange(checked ? user.area_ids.filter((id) => id !== area.id) : [...user.area_ids, area.id])} />
+              </label>;
+            })}
+          </div>
+        ) : <p className="text-xs" style={{ color: "var(--text-faint)" }}>Primero crea áreas para esta institución.</p>}
+      </div>
+    </details>
+  );
 }
 
 function FilterChip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
