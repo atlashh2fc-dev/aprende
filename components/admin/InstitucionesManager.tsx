@@ -6,8 +6,9 @@
  * quedan sin institución (FK ON DELETE SET NULL).
  */
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, Building2, Users, BookOpen, ShieldCheck } from "lucide-react";
+import { Loader2, Plus, Trash2, Building2, Users, BookOpen, ShieldCheck, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export interface InstRow {
@@ -38,7 +39,7 @@ export function InstitucionesManager({ instituciones: initial }: { instituciones
     if (!nombre.trim()) { setError("Escribe el nombre de la institución."); return; }
     if (!supabase) return;
     setAdding(true);
-    const slug = slugify(nombre) || `inst-${Date.now()}`;
+    const slug = slugify(nombre) || "institucion";
     const { data, error } = await supabase.from("instituciones")
       .insert({ nombre: nombre.trim(), slug } as never).select("id, nombre, slug").single();
     setAdding(false);
@@ -117,6 +118,10 @@ export function InstitucionesManager({ instituciones: initial }: { instituciones
                 <span className="inline-flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {i.cursos} cursos</span>
                 <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> {i.supervisores} superv.</span>
               </div>
+              <Link href={`/admin/instituciones/${i.id}`}
+                className="btn-ghost mt-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs">
+                Ver detalle <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
           ))}
         </div>
