@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Loader2, Search, ShieldCheck } from "lucide-react";
+import { Building2, Loader2, Search, ShieldCheck, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ROLE_LABEL } from "@/lib/roles";
 import type { UserRole } from "@/lib/supabase/database.types";
@@ -91,16 +91,49 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
     router.refresh();
   }
 
+  async function removeUser(user: UserRow) {
+    if (user.id === currentUserId || busy) return;
+    const confirmed = window.confirm(
+      `¿Eliminar definitivamente a ${fullName(user)}?\n\nSe borrará su acceso, perfil, inscripciones, progreso y asignaciones de área. Esta acción no se puede deshacer.`,
+    );
+    if (!confirmed) return;
+
+    setBusy(user.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/usuarios/${user.id}`, { method: "DELETE" });
+      const payload = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) {
+        setError(payload?.error ?? "No fue posible eliminar esta cuenta.");
+        return;
+      }
+      setUsers((previous) => previous.filter((candidate) => candidate.id !== user.id));
+      router.refresh();
+    } catch {
+      setError("No fue posible conectar para eliminar esta cuenta. Intenta nuevamente.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   function renderUserRow(user: UserRow) {
     const isSelf = user.id === currentUserId;
-    return <div key={user.id} className="grid grid-cols-1 gap-3 border-t px-5 py-3.5 first:border-t-0 md:grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_28px] md:items-center md:gap-3" style={{ borderColor: "var(--border)" }}>
+    return <div key={user.id} className="grid grid-cols-1 gap-3 border-t px-5 py-3.5 first:border-t-0 md:grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_36px] md:items-center md:gap-3" style={{ borderColor: "var(--border)" }}>
       <div className="flex min-w-0 items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold" style={{ background: "var(--primary-dim)", color: "var(--primary)" }}>{user.avatar_url
         // eslint-disable-next-line @next/next/no-img-element
         ? <img src={user.avatar_url} alt="" className="h-full w-full object-cover" /> : initials(user)}</span><div className="min-w-0"><p className="flex items-center gap-1.5 truncate text-sm font-medium" style={{ color: "var(--text)" }}>{fullName(user)}{isSelf && <span className="rounded px-1.5 py-0.5 text-[0.6rem] font-bold uppercase" style={{ background: "var(--surface-2)", color: "var(--text-faint)" }}>Tú</span>}</p><p className="truncate text-xs" style={{ color: "var(--text-faint)" }}>{user.email}</p></div></div>
       <div className="flex min-w-0 items-center gap-1.5"><select className={`${selCls} min-w-0`} style={selStyle} value={user.rol} disabled={isSelf || busy === user.id} onChange={(event) => patch(user.id, { rol: event.target.value as UserRole })} title={isSelf ? "No puedes cambiar tu propio rol" : undefined}>{ROLES.map((role) => <option key={role} value={role}>{ROLE_LABEL[role]}</option>)}</select>{user.rol === "admin" && <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--accent)" }} />}</div>
       <select className={`${selCls} w-full`} style={selStyle} value={user.institucion_id ?? ""} disabled={busy === user.id} onChange={(event) => patch(user.id, { institucion_id: event.target.value || null })}><option value="">— Sin institución —</option>{instituciones.map((institution) => <option key={institution.id} value={institution.id}>{institution.nombre}</option>)}</select>
       <AreaPicker user={user} areas={areas.filter((area) => area.institucion_id === user.institucion_id)} disabled={busy === user.id} onChange={(areaIds) => patchAreas(user.id, areaIds)} />
-      <span className="hidden justify-self-end md:block">{busy === user.id && <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--primary)" }} />}</span>
+      <div className="flex items-center md:justify-self-end">
+        {busy === user.id ? <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--primary)" }} /> : !isSelf && (
+          <button type="button" onClick={() => removeUser(user)} aria-label={`Eliminar a ${fullName(user)}`} title="Eliminar cuenta"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors md:h-8 md:w-8 md:justify-center md:px-0"
+            style={{ color: "#dc2626", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.22)" }}>
+            <Trash2 className="h-3.5 w-3.5" /><span className="md:hidden">Eliminar cuenta</span>
+          </button>
+        )}
+      </div>
     </div>;
   }
 
@@ -131,7 +164,7 @@ export function UsuariosManager({ users: initial, instituciones, areas, currentU
 
       {/* Tabla */}
       <div className="card overflow-hidden">
-        <div className="hidden grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_28px] gap-3 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider md:grid"
+        <div className="hidden grid-cols-[minmax(0,1.45fr)_minmax(132px,0.8fr)_minmax(170px,1fr)_minmax(160px,1fr)_36px] gap-3 px-5 py-3 text-[0.7rem] font-bold uppercase tracking-wider md:grid"
           style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border)" }}>
           <span>Usuario</span><span>Rol</span><span>Institución</span><span>Áreas / unidades</span><span />
         </div>
