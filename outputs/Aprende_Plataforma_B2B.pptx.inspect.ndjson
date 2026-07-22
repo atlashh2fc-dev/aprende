@@ -1,0 +1,142 @@
+{"kind":"deck","id":"pr/243ipe","name":"Deck"}
+{"kind":"layout","layoutId":"fbc63b5c-b7df-445d-878e-9f167f4255e2","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"067abbb9-c0c3-4e65-a315-f83c0f1d094a","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/vp9rko","slide":1,"title":"APRENDE","textShapes":6}
+{"kind":"shape","id":"sh/3mxgvytw","slide":1,"bbox":[0,0,1280,13]}
+{"kind":"textbox","id":"sh/4nqx4jah","slide":1,"text":"APRENDE","textPreview":"APRENDE","textChars":7,"textLines":1,"bbox":[64,64,180,28]}
+{"kind":"textbox","id":"sh/p8zyxob2","slide":1,"text":"Aprendizaje que\nse puede gestionar.","textPreview":"Aprendizaje que | se puede gestionar.","textChars":35,"textLines":2,"bbox":[64,170,520,190]}
+{"kind":"textbox","id":"sh/q98f6ts7","slide":1,"text":"Plataforma B2B para crear capacitación, activar cohortes y tomar decisiones con evidencia.","textPreview":"Plataforma B2B para crear capacitación, activar cohortes y tomar decisiones con evidencia.","textChars":90,"textLines":1,"bbox":[64,390,480,74]}
+{"kind":"shape","id":"sh/rahgzyts","slide":1,"bbox":[64,498,165,28]}
+{"kind":"textbox","id":"sh/cbqx83ad","slide":1,"text":"PROPUESTA COMERCIAL","textPreview":"PROPUESTA COMERCIAL","textChars":19,"textLines":1,"bbox":[76,505,141,16]}
+{"kind":"shape","id":"sh/dczy18by","slide":1,"bbox":[634,68,574,490]}
+{"kind":"textbox","id":"sh/7edwnuto","slide":1,"text":"Una experiencia para cada rol, una operación centralizada.","textPreview":"Una experiencia para cada rol, una operación centralizada.","textChars":58,"textLines":1,"bbox":[642,580,520,38]}
+{"kind":"textbox","id":"sh/rat0r2x4","slide":1,"text":"Captura real de la plataforma","textPreview":"Captura real de la plataforma","textChars":29,"textLines":1,"bbox":[642,622,250,20]}
+{"kind":"image","id":"im/76tc3adg","slide":1,"name":"","geometry":"roundRect","alt":"Dashboard ejecutivo real de Aprende","bbox":[642,76,558,474]}
+{"kind":"notes","id":"nt/vp9rko","slide":1,"text":""}
+{"kind":"slide","id":"sl/unmqnt","slide":2,"title":"La capacitación deja de ser un listado de cursos cuando se vuelve gestión.","textShapes":11}
+{"kind":"textbox","id":"sh/nuxc7mtw","slide":2,"text":"La capacitación deja de ser un listado de cursos cuando se vuelve gestión.","textPreview":"La capacitación deja de ser un listado de cursos cuando se vuelve gestión.","textChars":74,"textLines":1,"bbox":[56,54,1080,88]}
+{"kind":"textbox","id":"sh/ovqdg7ah","slide":2,"text":"Aprende reúne contenido, asignación, avance y seguimiento en un solo flujo para equipos de RR.HH., operaciones y formación.","textPreview":"Aprende reúne contenido, asignación, avance y seguimiento en un solo flujo para equipos de RR.HH., operaciones y formación.","textChars":123,"textLines":1,"bbox":[56,160,1020,55]}
+{"kind":"shape","id":"sh/pwzu9cb2","slide":2,"bbox":[56,292,354,228]}
+{"kind":"textbox","id":"sh/epobaxsf","slide":2,"text":"Crear","textPreview":"Crear","textChars":5,"textLines":1,"bbox":[84,327,280,54]}
+{"kind":"textbox","id":"sh/fqxc32t0","slide":2,"text":"Cursos, lecciones, video, texto y evaluaciones.","textPreview":"Cursos, lecciones, video, texto y evaluaciones.","textChars":47,"textLines":1,"bbox":[84,400,286,68]}
+{"kind":"shape","id":"sh/0r6tc7al","slide":2,"bbox":[454,292,354,228]}
+{"kind":"textbox","id":"sh/1sfu5cbq","slide":2,"text":"Activar","textPreview":"Activar","textChars":7,"textLines":1,"bbox":[482,327,280,54]}
+{"kind":"textbox","id":"sh/614b6xs3","slide":2,"text":"Cohortes, instituciones y fechas límite.","textPreview":"Cohortes, instituciones y fechas límite.","textChars":40,"textLines":1,"bbox":[482,400,286,68]}
+{"kind":"shape","id":"sh/r2dcz2to","slide":2,"bbox":[852,292,354,228]}
+{"kind":"textbox","id":"sh/feps3atg","slide":2,"text":"Medir","textPreview":"Medir","textChars":5,"textLines":1,"bbox":[880,327,280,54]}
+{"kind":"textbox","id":"sh/edgbu5cv","slide":2,"text":"Avance, actividad, aprobaciones y exportación.","textPreview":"Avance, actividad, aprobaciones y exportación.","textChars":46,"textLines":1,"bbox":[880,400,286,68]}
+{"kind":"textbox","id":"sh/1g7a5kbm","slide":2,"text":"Resultado: una operación de aprendizaje visible, accionable y escalable para cada cliente B2B.","textPreview":"Resultado: una operación de aprendizaje visible, accionable y escalable para cada cliente B2B.","textChars":94,"textLines":1,"bbox":[56,586,1070,38]}
+{"kind":"textbox","id":"sh/0fytwfu1","slide":2,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/ni9c7uts","slide":2,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"notes","id":"nt/unmqnt","slide":2,"text":""}
+{"kind":"slide","id":"sl/oai2nn","slide":3,"title":"Cuatro roles, una experiencia alineada a la operación.","textShapes":12}
+{"kind":"textbox","id":"sh/n2dob29k","slide":3,"text":"Cuatro roles, una experiencia alineada a la operación.","textPreview":"Cuatro roles, una experiencia alineada a la operación.","textChars":54,"textLines":1,"bbox":[56,52,1050,52]}
+{"kind":"textbox","id":"sh/83mp47q5","slide":3,"text":"Cada perfil recibe la información y acciones que necesita, sin sobrecargar la experiencia.","textPreview":"Cada perfil recibe la información y acciones que necesita, sin sobrecargar la experiencia.","textChars":90,"textLines":1,"bbox":[56,118,980,32]}
+{"kind":"shape","id":"sh/94v6dc7q","slide":3,"bbox":[56,214,570,174]}
+{"kind":"shape","id":"sh/a5476h8b","slide":3,"bbox":[84,245,12,12]}
+{"kind":"textbox","id":"sh/v6dof2pw","slide":3,"text":"Alumno","textPreview":"Alumno","textChars":6,"textLines":1,"bbox":[114,240,400,34]}
+{"kind":"textbox","id":"sh/w76p87q1","slide":3,"text":"Aprende con rutas guiadas, progreso y certificados.","textPreview":"Aprende con rutas guiadas, progreso y certificados.","textChars":51,"textLines":1,"bbox":[114,292,440,56]}
+{"kind":"shape","id":"sh/x8f6hc7m","slide":3,"bbox":[654,214,570,174]}
+{"kind":"shape","id":"sh/i9o7ah87","slide":3,"bbox":[682,245,12,12]}
+{"kind":"textbox","id":"sh/jaxojmps","slide":3,"text":"Profesor","textPreview":"Profesor","textChars":8,"textLines":1,"bbox":[712,240,400,34]}
+{"kind":"textbox","id":"sh/bip4jadw","slide":3,"text":"Crea, organiza y evalúa cursos de su portafolio.","textPreview":"Crea, organiza y evalúa cursos de su portafolio.","textChars":48,"textLines":1,"bbox":[712,292,440,56]}
+{"kind":"shape","id":"sh/ahg3qpwr","slide":3,"bbox":[56,440,570,174]}
+{"kind":"shape","id":"sh/xkrmlkv2","slide":3,"bbox":[84,471,12,12]}
+{"kind":"textbox","id":"sh/wjylsfuh","slide":3,"text":"Supervisor","textPreview":"Supervisor","textChars":10,"textLines":1,"bbox":[114,466,400,34]}
+{"kind":"textbox","id":"sh/nupkfad0","slide":3,"text":"Asigna cohortes y da seguimiento a su institución.","textPreview":"Asigna cohortes y da seguimiento a su institución.","textChars":50,"textLines":1,"bbox":[114,518,440,56]}
+{"kind":"shape","id":"sh/mtg3m5wf","slide":3,"bbox":[654,440,570,174]}
+{"kind":"shape","id":"sh/9g72hkv6","slide":3,"bbox":[682,471,12,12]}
+{"kind":"textbox","id":"sh/ofylofel","slide":3,"text":"Administrador","textPreview":"Administrador","textChars":13,"textLines":1,"bbox":[712,466,400,34]}
+{"kind":"textbox","id":"sh/7q94rud4","slide":3,"text":"Gobierna usuarios, instituciones, contenidos y reportes.","textPreview":"Gobierna usuarios, instituciones, contenidos y reportes.","textChars":56,"textLines":1,"bbox":[712,518,440,56]}
+{"kind":"textbox","id":"sh/6p03y9cj","slide":3,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/2547qdwr","slide":3,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"notes","id":"nt/oai2nn","slide":3,"text":""}
+{"kind":"slide","id":"sl/lfctpk","slide":4,"title":"Administración central para equipos B2B.","textShapes":11}
+{"kind":"textbox","id":"sh/mhwzutkb","slide":4,"text":"Administración central para equipos B2B.","textPreview":"Administración central para equipos B2B.","textChars":40,"textLines":1,"bbox":[56,54,540,78]}
+{"kind":"textbox","id":"sh/9kny58j2","slide":4,"text":"La plataforma segmenta usuarios por rol y los asigna a instituciones para reflejar cómo se organiza cada negocio cliente.","textPreview":"La plataforma segmenta usuarios por rol y los asigna a instituciones para reflejar cómo se organiza cada negocio cliente.","textChars":121,"textLines":1,"bbox":[56,154,560,60]}
+{"kind":"shape","id":"sh/8jehw32h","slide":4,"bbox":[650,62,564,536]}
+{"kind":"shape","id":"sh/ulwzytkn","slide":4,"bbox":[56,253,10,10]}
+{"kind":"textbox","id":"sh/hony98jy","slide":4,"text":"Roles configurables","textPreview":"Roles configurables","textChars":19,"textLines":1,"bbox":[80,250,300,24]}
+{"kind":"textbox","id":"sh/wneh032t","slide":4,"text":"Alumno, profesor, supervisor y administrador.","textPreview":"Alumno, profesor, supervisor y administrador.","textChars":45,"textLines":1,"bbox":[80,275,330,38]}
+{"kind":"shape","id":"sh/bqlgve1o","slide":4,"bbox":[56,349,10,10]}
+{"kind":"textbox","id":"sh/apsfm9kj","slide":4,"text":"Instituciones y cohortes","textPreview":"Instituciones y cohortes","textChars":24,"textLines":1,"bbox":[80,346,300,24]}
+{"kind":"textbox","id":"sh/cvidw7a5","slide":4,"text":"Una operación aislada y visible para cada cliente o unidad.","textPreview":"Una operación aislada y visible para cada cliente o unidad.","textChars":59,"textLines":1,"bbox":[80,371,330,38]}
+{"kind":"shape","id":"sh/dwre5cra","slide":4,"bbox":[56,445,10,10]}
+{"kind":"textbox","id":"sh/qt0vuxsz","slide":4,"text":"Modo demo","textPreview":"Modo demo","textChars":9,"textLines":1,"bbox":[80,442,300,24]}
+{"kind":"textbox","id":"sh/ru9w329k","slide":4,"text":"El administrador puede previsualizar la experiencia de cada rol.","textPreview":"El administrador puede previsualizar la experiencia de cada rol.","textChars":64,"textLines":1,"bbox":[80,467,330,38]}
+{"kind":"textbox","id":"sh/0zid07a1","slide":4,"text":"Captura real: gestión de usuarios","textPreview":"Captura real: gestión de usuarios","textChars":33,"textLines":1,"bbox":[658,608,270,18]}
+{"kind":"textbox","id":"sh/10re9crm","slide":4,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/ex0vyhsv","slide":4,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"image","id":"im/6x43qlwv","slide":4,"name":"","geometry":"roundRect","alt":"Gestión real de usuarios y roles","bbox":[658,70,548,520]}
+{"kind":"notes","id":"nt/lfctpk","slide":4,"text":""}
+{"kind":"slide","id":"sl/svdq9w","slide":5,"title":"Autonomía para crear y actualizar cursos.","textShapes":11}
+{"kind":"textbox","id":"sh/43ilcvql","slide":5,"text":"Autonomía para crear y actualizar cursos.","textPreview":"Autonomía para crear y actualizar cursos.","textChars":41,"textLines":1,"bbox":[56,54,535,88]}
+{"kind":"textbox","id":"sh/32943qp0","slide":5,"text":"Los equipos formadores diseñan experiencias completas, publican cuando están listas y mantienen el contenido actualizado.","textPreview":"Los equipos formadores diseñan experiencias completas, publican cuando están listas y mantienen el contenido actualizado.","textChars":121,"textLines":1,"bbox":[56,170,520,72]}
+{"kind":"shape","id":"sh/i103al8f","slide":5,"bbox":[56,289,10,10]}
+{"kind":"textbox","id":"sh/dsbm9072","slide":5,"text":"Estructura pedagógica","textPreview":"Estructura pedagógica","textChars":21,"textLines":1,"bbox":[80,286,300,24]}
+{"kind":"textbox","id":"sh/sr2lgvqh","slide":5,"text":"Módulos y lecciones con orden editable.","textPreview":"Módulos y lecciones con orden editable.","textChars":39,"textLines":1,"bbox":[80,311,330,38]}
+{"kind":"shape","id":"sh/rqt47qpw","slide":5,"bbox":[56,385,10,10]}
+{"kind":"textbox","id":"sh/qpk3e58b","slide":5,"text":"Formatos flexibles","textPreview":"Formatos flexibles","textChars":18,"textLines":1,"bbox":[80,382,300,24]}
+{"kind":"textbox","id":"sh/1wvmdk7y","slide":5,"text":"Video, texto y evaluaciones por lección.","textPreview":"Video, texto y evaluaciones por lección.","textChars":40,"textLines":1,"bbox":[80,407,330,38]}
+{"kind":"shape","id":"sh/0v254f6t","slide":5,"bbox":[56,481,10,10]}
+{"kind":"textbox","id":"sh/y5k765sj","slide":5,"text":"Publicación controlada","textPreview":"Publicación controlada","textChars":22,"textLines":1,"bbox":[80,478,300,24]}
+{"kind":"textbox","id":"sh/z6tofat4","slide":5,"text":"Estados de borrador, publicado y archivado.","textPreview":"Estados de borrador, publicado y archivado.","textChars":43,"textLines":1,"bbox":[80,503,330,38]}
+{"kind":"shape","id":"sh/072p8fap","slide":5,"bbox":[642,68,572,544]}
+{"kind":"textbox","id":"sh/m9k7a5sv","slide":5,"text":"Captura real: creación y edición de cursos","textPreview":"Captura real: creación y edición de cursos","textChars":42,"textLines":1,"bbox":[650,622,320,18]}
+{"kind":"textbox","id":"sh/nadojat0","slide":5,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/8bmpcfal","slide":5,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"image","id":"im/uxsfmh4j","slide":5,"name":"","geometry":"roundRect","alt":"Edición real de un curso","bbox":[650,76,556,528]}
+{"kind":"notes","id":"nt/svdq9w","slide":5,"text":""}
+{"kind":"slide","id":"sl/rj5vfc","slide":6,"title":"Cada supervisor puede convertir el avance en una acción concreta.","textShapes":8}
+{"kind":"textbox","id":"sh/eh032t83","slide":6,"text":"Cada supervisor puede convertir el avance en una acción concreta.","textPreview":"Cada supervisor puede convertir el avance en una acción concreta.","textChars":65,"textLines":1,"bbox":[56,54,1110,56]}
+{"kind":"shape","id":"sh/1kbmd87u","slide":6,"bbox":[48,140,736,421]}
+{"kind":"shape","id":"sh/nmt4fyp0","slide":6,"bbox":[56,578,104,28]}
+{"kind":"textbox","id":"sh/mlk36t8f","slide":6,"text":"CAPTURA REAL","textPreview":"CAPTURA REAL","textChars":12,"textLines":1,"bbox":[68,585,80,16]}
+{"kind":"textbox","id":"sh/98bmh876","slide":6,"text":"Seguimiento de institución","textPreview":"Seguimiento de institución","textChars":26,"textLines":1,"bbox":[838,168,300,30]}
+{"kind":"textbox","id":"sh/8n2l83ql","slide":6,"text":"Filtros por curso y estado, búsqueda, orden, paginación y exportación CSV para priorizar alumnos inactivos o en riesgo.","textPreview":"Filtros por curso y estado, búsqueda, orden, paginación y exportación CSV para priorizar alumnos inactivos o en riesgo.","textChars":119,"textLines":1,"bbox":[838,216,330,112]}
+{"kind":"textbox","id":"sh/3qpk3epg","slide":6,"text":"Además","textPreview":"Además","textChars":6,"textLines":1,"bbox":[838,374,270,24]}
+{"kind":"textbox","id":"sh/2pg3u98b","slide":6,"text":"Asignación masiva de cursos, fechas límite y reprogramación de compromisos por cohorte.","textPreview":"Asignación masiva de cursos, fechas límite y reprogramación de compromisos por cohorte.","textChars":87,"textLines":1,"bbox":[838,410,320,80]}
+{"kind":"textbox","id":"sh/0butsbyd","slide":6,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/lc3ulgfi","slide":6,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"image","id":"im/pwbytgb6","slide":6,"name":"","geometry":"roundRect","alt":"Dashboard real de supervisor con seguimiento por alumno","bbox":[56,148,720,405]}
+{"kind":"notes","id":"nt/rj5vfc","slide":6,"text":""}
+{"kind":"slide","id":"sl/cu233o","slide":7,"title":"La dirección ve el estado de la capacitación.","textShapes":11}
+{"kind":"textbox","id":"sh/90vyxcru","slide":7,"text":"La dirección ve el estado de la capacitación.","textPreview":"La dirección ve el estado de la capacitación.","textChars":45,"textLines":1,"bbox":[56,54,520,88]}
+{"kind":"textbox","id":"sh/md4z2xs3","slide":7,"text":"El dashboard ejecutivo transforma inscripciones, actividad, finalización y aprobaciones en un punto de control común.","textPreview":"El dashboard ejecutivo transforma inscripciones, actividad, finalización y aprobaciones en un punto de control común.","textChars":117,"textLines":1,"bbox":[56,166,500,72]}
+{"kind":"shape","id":"sh/nydgv29o","slide":7,"bbox":[612,62,602,531]}
+{"kind":"textbox","id":"sh/x4fi1crq","slide":7,"text":"Usuarios","textPreview":"Usuarios","textChars":8,"textLines":1,"bbox":[56,286,185,22]}
+{"kind":"textbox","id":"sh/a1oz6xsz","slide":7,"text":"Distribución de alumnos, profesores, supervisores y admins.","textPreview":"Distribución de alumnos, profesores, supervisores y admins.","textChars":59,"textLines":1,"bbox":[56,315,490,42]}
+{"kind":"textbox","id":"sh/b2xgz29k","slide":7,"text":"Actividad","textPreview":"Actividad","textChars":9,"textLines":1,"bbox":[56,378,185,22]}
+{"kind":"textbox","id":"sh/c72hwna1","slide":7,"text":"Inscripciones y desempeño por curso e institución.","textPreview":"Inscripciones y desempeño por curso e institución.","textChars":50,"textLines":1,"bbox":[56,407,490,42]}
+{"kind":"textbox","id":"sh/d8bypsrm","slide":7,"text":"Decisión","textPreview":"Decisión","textChars":8,"textLines":1,"bbox":[56,470,185,22]}
+{"kind":"textbox","id":"sh/hw3yd8fq","slide":7,"text":"Señales para intervenir antes de que el avance se detenga.","textPreview":"Señales para intervenir antes de que el avance se detenga.","textChars":58,"textLines":1,"bbox":[56,499,490,42]}
+{"kind":"textbox","id":"sh/gbux43e5","slide":7,"text":"Captura real: panel ejecutivo","textPreview":"Captura real: panel ejecutivo","textChars":29,"textLines":1,"bbox":[620,608,260,18]}
+{"kind":"textbox","id":"sh/falgbyxk","slide":7,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/u9cfidwf","slide":7,"text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"image","id":"im/1wr6hwva","slide":7,"name":"","geometry":"roundRect","alt":"Dashboard real de administración","bbox":[620,70,586,515]}
+{"kind":"notes","id":"nt/cu233o","slide":7,"text":""}
+{"kind":"slide","id":"sl/f4epe5","slide":8,"title":"Un catálogo profesional para activar la oferta de formación.","textShapes":11}
+{"kind":"textbox","id":"sh/907qp8re","slide":8,"text":"Un catálogo profesional para activar la oferta de formación.","textPreview":"Un catálogo profesional para activar la oferta de formación.","textChars":60,"textLines":1,"bbox":[56,54,1100,54]}
+{"kind":"shape","id":"sh/2xw7ud83","slide":8,"bbox":[48,150,656,381]}
+{"kind":"textbox","id":"sh/0beps3qx","slide":8,"text":"Diseñado para vender y ejecutar","textPreview":"Diseñado para vender y ejecutar","textChars":31,"textLines":1,"bbox":[770,170,400,30]}
+{"kind":"shape","id":"sh/1cn6l8ri","slide":8,"bbox":[770,241,10,10]}
+{"kind":"textbox","id":"sh/e9w7qt8r","slide":8,"text":"Portadas profesionales","textPreview":"Portadas profesionales","textChars":22,"textLines":1,"bbox":[794,238,300,24]}
+{"kind":"textbox","id":"sh/fa5ojy9c","slide":8,"text":"Catálogo reconocible y listo para presentar a clientes.","textPreview":"Catálogo reconocible y listo para presentar a clientes.","textChars":55,"textLines":1,"bbox":[794,263,330,38]}
+{"kind":"shape","id":"sh/s7epojq1","slide":8,"bbox":[770,347,10,10]}
+{"kind":"textbox","id":"sh/d8n6hor6","slide":8,"text":"Oferta administrable","textPreview":"Oferta administrable","textChars":20,"textLines":1,"bbox":[794,344,300,24]}
+{"kind":"textbox","id":"sh/lwfatgva","slide":8,"text":"Cursos publicados, borradores y archivados en un solo lugar.","textPreview":"Cursos publicados, borradores y archivados en un solo lugar.","textChars":60,"textLines":1,"bbox":[794,369,330,38]}
+{"kind":"shape","id":"sh/0v69kvup","slide":8,"bbox":[770,453,10,10]}
+{"kind":"textbox","id":"sh/zudsrqd4","slide":8,"text":"Rutas para aprender","textPreview":"Rutas para aprender","textChars":19,"textLines":1,"bbox":[794,450,300,24]}
+{"kind":"textbox","id":"sh/y94rilcj","slide":8,"text":"Inscripción, avance guiado, evaluaciones y certificados.","textPreview":"Inscripción, avance guiado, evaluaciones y certificados.","textChars":56,"textLines":1,"bbox":[794,475,330,38]}
+{"kind":"textbox","id":"sh/d8vapgvy","slide":8,"text":"Captura real: catálogo de cursos","textPreview":"Captura real: catálogo de cursos","textChars":32,"textLines":1,"bbox":[56,548,250,18]}
+{"kind":"textbox","id":"sh/c7m9gbud","slide":8,"text":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textPreview":"APRENDE  |  PLATAFORMA B2B DE APRENDIZAJE","textChars":41,"textLines":1,"bbox":[56,680,500,16]}
+{"kind":"textbox","id":"sh/b6dsn6d8","slide":8,"text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[1190,680,34,16]}
+{"kind":"image","id":"im/als7yp0b","slide":8,"name":"","geometry":"roundRect","alt":"Catálogo real de cursos administrados","bbox":[56,158,640,365]}
+{"kind":"notes","id":"nt/f4epe5","slide":8,"text":""}
+{"kind":"slide","id":"sl/wom07w","slide":9,"title":"APRENDE","textShapes":5}
+{"kind":"textbox","id":"sh/5g72dwju","slide":9,"text":"APRENDE","textPreview":"APRENDE","textChars":7,"textLines":1,"bbox":[64,66,220,30]}
+{"kind":"textbox","id":"sh/ydgj21k3","slide":9,"text":"Capacitación que se ve,\nse gestiona y mejora.","textPreview":"Capacitación que se ve, | se gestiona y mejora.","textChars":45,"textLines":2,"bbox":[64,182,900,180]}
+{"kind":"textbox","id":"sh/jepkbm1o","slide":9,"text":"Siguiente paso propuesto","textPreview":"Siguiente paso propuesto","textChars":24,"textLines":1,"bbox":[64,490,280,24]}
+{"kind":"textbox","id":"sh/wby10r2x","slide":9,"text":"Definir una cohorte piloto, cargar el portafolio inicial y acordar las métricas que su negocio necesita mover.","textPreview":"Definir una cohorte piloto, cargar el portafolio inicial y acordar las métricas que su negocio necesita mover.","textChars":110,"textLines":1,"bbox":[64,530,860,60]}
+{"kind":"textbox","id":"sh/xc729wji","slide":9,"text":"Demo disponible con vistas de alumno, profesor, supervisor y administrador.","textPreview":"Demo disponible con vistas de alumno, profesor, supervisor y administrador.","textChars":75,"textLines":1,"bbox":[64,636,900,22]}
+{"kind":"notes","id":"nt/wom07w","slide":9,"text":""}

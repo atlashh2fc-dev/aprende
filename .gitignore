@@ -30,3 +30,6 @@ yarn-error.log*
 
 # CI build
 /.next-ci/
+
+# Supabase CLI local metadata
+/supabase/.temp/
