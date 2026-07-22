@@ -15,8 +15,15 @@ export const dynamic = "force-dynamic";
 const TIPO_ICON = { video: PlayCircle, texto: FileText, quiz: HelpCircle } as const;
 const TIPO_LABEL = { video: "Video", texto: "Lectura", quiz: "Quiz" } as const;
 
-export default async function CursoPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CursoPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ vista?: string }>;
+}) {
   const { slug } = await params;
+  const { vista } = await searchParams;
   const user = await getSessionUser();
   if (!user) redirect(`/login?redirect=/cursos/${slug}`);
   const supabase = await createClient();
@@ -24,11 +31,12 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
 
   const { data: cursoRaw } = await supabase
     .from("cursos")
-    .select("id, slug, titulo, descripcion, descripcion_corta, imagen_url, nivel, duracion_horas, categoria")
+    .select("id, slug, titulo, descripcion, descripcion_corta, imagen_url, nivel, duracion_horas, categoria, profesor_id")
     .eq("slug", slug)
     .single();
-  const curso = cursoRaw as Pick<Curso, "id" | "slug" | "titulo" | "descripcion" | "descripcion_corta" | "imagen_url" | "nivel" | "duracion_horas" | "categoria"> | null;
+  const curso = cursoRaw as Pick<Curso, "id" | "slug" | "titulo" | "descripcion" | "descripcion_corta" | "imagen_url" | "nivel" | "duracion_horas" | "categoria" | "profesor_id"> | null;
   if (!curso) notFound();
+  const vistaAlumno = vista === "alumno" && user.rol === "profesor" && curso.profesor_id === user.id;
 
   const [{ data: leccionesRaw }, { data: modulosRaw }, { data: insRaw }, { data: progresoRaw }] = await Promise.all([
     supabase.from("lecciones").select("id, titulo, tipo, duracion_min, orden, modulo_id").eq("curso_id", curso.id).order("orden"),
@@ -39,6 +47,7 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
   const lecciones = (leccionesRaw as Pick<Leccion, "id" | "titulo" | "tipo" | "duracion_min" | "orden" | "modulo_id">[] | null) ?? [];
   const modulos = (modulosRaw as Pick<Modulo, "id" | "titulo" | "orden">[] | null) ?? [];
   const inscrito = !!insRaw;
+  const puedeVerLecciones = inscrito || vistaAlumno;
   const totalMin = lecciones.reduce((acc, l) => acc + (l.duracion_min ?? 0), 0);
   const completadas = new Set(
     ((progresoRaw as { leccion_id: string; completada: boolean }[] | null) ?? [])
@@ -124,7 +133,7 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                 const Icon = TIPO_ICON[l.tipo] ?? FileText;
                 const i = lecciones.findIndex((leccion) => leccion.id === l.id);
                 const row = (
-                  <div className={`card flex items-center gap-4 px-5 py-4 ${inscrito ? "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]" : ""}`}>
+                  <div className={`card flex items-center gap-4 px-5 py-4 ${puedeVerLecciones ? "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]" : ""}`}>
                     <span className="text-xs font-bold tabular-nums" style={{ color: "var(--text-faint)" }}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
@@ -142,11 +151,11 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                     {!!l.duracion_min && (
                       <span className="text-xs tabular-nums" style={{ color: "var(--text-faint)" }}>{l.duracion_min} min</span>
                     )}
-                    {!inscrito && <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-faint)" }} />}
+                    {!puedeVerLecciones && <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--text-faint)" }} />}
                   </div>
                 );
-                return inscrito
-                  ? <Link key={l.id} href={`/aprender/${l.id}`}>{row}</Link>
+                return puedeVerLecciones
+                  ? <Link key={l.id} href={`/aprender/${l.id}${vistaAlumno ? "?vista=alumno" : ""}`}>{row}</Link>
                   : <div key={l.id} style={{ opacity: 0.72 }}>{row}</div>;
                   })}
                   </div>
@@ -190,7 +199,19 @@ export default async function CursoPage({ params }: { params: Promise<{ slug: st
                 )}
               </ul>
               <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--border)" }}>
-                {inscrito ? (
+                {vistaAlumno ? (
+                  <div className="flex flex-col gap-3">
+                    <p className="rounded-xl px-4 py-3 text-xs leading-relaxed" style={{ background: "var(--primary-dim)", color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+                      Estás viendo este curso como alumno. Puedes revisar todo el contenido sin alterar avances ni evaluaciones.
+                    </p>
+                    {lecciones[0] && (
+                      <Link href={`/aprender/${lecciones[0].id}?vista=alumno`}
+                        className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-xs">
+                        <PlayCircle className="h-4 w-4" /> Comenzar vista previa
+                      </Link>
+                    )}
+                  </div>
+                ) : inscrito ? (
                   <div className="flex flex-col gap-3">
                     {lecciones.length > 0 && (
                       <div>

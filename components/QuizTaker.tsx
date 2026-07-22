@@ -20,7 +20,7 @@ interface Resultado {
 }
 
 export function QuizTaker({
-  quizId, titulo, preguntas, fechaLimite, intentosMaximos, intentosUsados, feedbackDocente,
+  quizId, titulo, preguntas, fechaLimite, intentosMaximos, intentosUsados, feedbackDocente, preview = false,
 }: {
   quizId: string;
   titulo: string;
@@ -29,6 +29,8 @@ export function QuizTaker({
   intentosMaximos: number | null;
   intentosUsados: number;
   feedbackDocente: string | null;
+  /** Muestra el quiz tal como lo verá un alumno sin persistir un intento. */
+  preview?: boolean;
 }) {
   const [respuestas, setRespuestas] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(false);
@@ -133,7 +135,7 @@ export function QuizTaker({
         <div className="flex items-center justify-between gap-4">
           <h2 className="font-serif-brand text-xl font-bold tracking-tight" style={{ color: "var(--text)" }}>{titulo}</h2>
           <span className="text-xs font-semibold tabular-nums" style={{ color: "var(--text-faint)" }}>
-            {contestadas}/{preguntas.length} respondidas
+            {preview ? "Vista previa" : `${contestadas}/${preguntas.length} respondidas`}
           </span>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: "var(--text-muted)" }}>
@@ -143,18 +145,18 @@ export function QuizTaker({
               {fechaVencida ? `Cerró ${fechaVisible}` : `Cierra ${fechaVisible}`}
             </span>
           )}
-          <span>
+          {!preview && <span>
             {intentosMaximos === null
               ? `${intentosUsados} intento${intentosUsados === 1 ? "" : "s"} realizado${intentosUsados === 1 ? "" : "s"}`
               : `${intentosUsados}/${intentosMaximos} intentos utilizados`}
-          </span>
+          </span>}
         </div>
         <div className="progress-track mt-3 h-1.5 w-full">
           <div className="progress-bar h-full" style={{ width: `${progreso}%` }} />
         </div>
       </div>
 
-      {feedbackDocente && (
+      {!preview && feedbackDocente && (
         <aside className="rounded-xl p-4" style={{ background: "var(--accent-dim)", border: "1px solid color-mix(in srgb, var(--accent) 28%, transparent)" }}>
           <p className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "var(--accent)" }}><MessageSquareText className="h-3.5 w-3.5" /> Feedback de tu profesor</p>
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{feedbackDocente}</p>
@@ -218,12 +220,12 @@ export function QuizTaker({
         </p>
       )}
 
-      <button onClick={enviar} disabled={loading || contestadas !== preguntas.length || !puedeRendir}
+      <button onClick={enviar} disabled={preview || loading || contestadas !== preguntas.length || !puedeRendir}
         className="btn-primary inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm disabled:opacity-50">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        {loading ? "Calificando…" : "Enviar respuestas"}
+        {loading ? "Calificando…" : preview ? "Vista previa: respuestas no se envían" : "Enviar respuestas"}
       </button>
-      {contestadas !== preguntas.length && (
+      {!preview && contestadas !== preguntas.length && (
         <p className="text-center text-xs" style={{ color: "var(--text-faint)" }}>
           Responde las {preguntas.length - contestadas} {preguntas.length - contestadas === 1 ? "pregunta pendiente" : "preguntas pendientes"} para enviar la evaluación.
         </p>

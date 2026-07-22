@@ -66,12 +66,10 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
               className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
               <ClipboardCheck className="h-3.5 w-3.5" /> Calificaciones
             </Link>
-            {curso.estado === "publicado" && (
-              <Link href={`/cursos/${curso.slug}`}
-                className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
-                <ExternalLink className="h-3.5 w-3.5" /> Ver público
-              </Link>
-            )}
+            <Link href={`/cursos/${curso.slug}?vista=alumno`}
+              className="btn-ghost inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs">
+              <ExternalLink className="h-3.5 w-3.5" /> Vista alumno
+            </Link>
           </div>
         </div>
 
