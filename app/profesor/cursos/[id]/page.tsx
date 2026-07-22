@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardCheck, ClipboardPenLine, ExternalLink, ListChecks, Layers } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, ClipboardPenLine, ExternalLink, ListChecks, Layers, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CursoForm } from "@/components/admin/CursoForm";
 import { LeccionesManager } from "@/components/admin/LeccionesManager";
 import { ModulosManager } from "@/components/admin/ModulosManager";
+import { CourseMaterialBuilder } from "@/components/admin/CourseMaterialBuilder";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Curso, Leccion, Modulo } from "@/lib/supabase/database.types";
+import type { Curso, CursoMaterial, Leccion, Modulo } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,12 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
     .from("lecciones").select("*").eq("curso_id", id).order("orden", { ascending: true });
   const lecciones = (leccionesRaw as Leccion[] | null) ?? [];
 
-  const { data: modulosRaw } = await supabase
-    .from("modulos").select("*").eq("curso_id", id).order("orden", { ascending: true });
+  const [{ data: modulosRaw }, { data: materialsRaw }] = await Promise.all([
+    supabase.from("modulos").select("*").eq("curso_id", id).order("orden", { ascending: true }),
+    supabase.from("curso_materiales").select("*").eq("curso_id", id).order("created_at", { ascending: true }),
+  ]);
   const modulos = (modulosRaw as Modulo[] | null) ?? [];
+  const materials = (materialsRaw as CursoMaterial[] | null) ?? [];
 
   const leccionesPorModulo: Record<string, number> = {};
   lecciones.forEach((l) => { if (l.modulo_id) leccionesPorModulo[l.modulo_id] = (leccionesPorModulo[l.modulo_id] ?? 0) + 1; });
@@ -74,6 +78,14 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
         </div>
 
         <div className="animate-rise rise-3 mt-10">
+          <div className="mb-4 flex items-center gap-2">
+            <Sparkles className="h-4 w-4" style={{ color: "var(--primary)" }} />
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>Construir desde material</h2>
+          </div>
+          <CourseMaterialBuilder courseId={curso.id} userId={user.id} materials={materials} hasExistingContent={lecciones.length > 0 || modulos.length > 0} />
+        </div>
+
+        <div className="animate-rise rise-4 mt-10">
           <div className="mb-4 flex items-center gap-2">
             <Layers className="h-4 w-4" style={{ color: "var(--primary)" }} />
             <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>Módulos ({modulos.length})</h2>

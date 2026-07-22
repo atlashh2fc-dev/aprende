@@ -8,6 +8,12 @@ const AI_MODEL = process.env.INCEPTION_MODEL || "mercury-2";
 
 export interface ChatMessage { role: "system" | "user" | "assistant"; content: string }
 
+export interface JsonSchemaResponseFormat {
+  name: string;
+  strict: true;
+  schema: Record<string, unknown>;
+}
+
 export function aiConfigured(): boolean {
   return !!process.env.INCEPTION_API_KEY;
 }
@@ -37,4 +43,35 @@ export async function aiChat(
   }
   const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
   return data.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
+/** Solicita una respuesta validada por el esquema JSON de Inception. Solo servidor. */
+export async function aiStructured<T>(
+  messages: ChatMessage[],
+  schema: JsonSchemaResponseFormat,
+  opts: { temperature?: number; maxTokens?: number; reasoning?: "instant" | "low" | "medium" | "high" } = {}
+): Promise<T> {
+  const key = process.env.INCEPTION_API_KEY;
+  if (!key) throw new Error("no_ai_key");
+
+  const res = await fetch(`${AI_BASE}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      messages,
+      temperature: opts.temperature ?? 0.35,
+      max_tokens: opts.maxTokens ?? 12000,
+      reasoning_effort: opts.reasoning ?? "medium",
+      response_format: { type: "json_schema", json_schema: schema },
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`ai_http_${res.status}: ${detail.slice(0, 300)}`);
+  }
+  const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("ai_empty_structured_response");
+  try { return JSON.parse(content) as T; } catch { throw new Error("ai_invalid_structured_response"); }
 }

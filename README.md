@@ -9,6 +9,7 @@ Login con Google, carga de cursos y clases, quizzes con calificación automátic
 - **Next.js 16** (App Router, React 19, React Compiler) + **TypeScript**
 - **Tailwind CSS v4**
 - **Supabase** (Postgres + Auth + RLS)
+- **LlamaParse** (OCR y lectura de documentos) + **Inception Mercury 2** (construcción de curso)
 - **framer-motion**, **lucide-react**, **react-player**
 - Deploy: **Vercel**
 
@@ -82,6 +83,17 @@ y cada página sensible exige el rol con `requireRole()` (fuente de verdad: la t
 - **RLS activado** en todas las tablas, con helpers `current_rol()`, `current_institucion()`, `is_admin()`.
 - Los quizzes se **califican en el servidor** (`/api/quiz/grade` con service_role) para no exponer
   las respuestas correctas al cliente.
+
+### Construcción de cursos desde material
+
+Al crear un curso, el profesor llega a su pantalla de edición. Ahí puede subir archivos privados
+(`PDF`, `DOC/DOCX`, `PPT/PPTX`, `TXT/MD`, `JPG/PNG/WEBP`; máximo 25 MB cada uno) y elegir
+**Construir curso con IA**. LlamaParse extrae el contenido y OCR; Inception devuelve una estructura
+validada de módulos, lecciones y quizzes, que se guarda como borrador editable antes de publicar.
+
+Antes de desplegar, aplica la migración `20260722190201_course_material_generation.sql` y define,
+solo en el servidor, `LLAMA_CLOUD_API_KEY` e `INCEPTION_API_KEY`. Las claves nunca se exponen con
+el prefijo `NEXT_PUBLIC_`.
 
 ## Estructura
 

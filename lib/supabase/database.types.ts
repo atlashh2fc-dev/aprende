@@ -11,6 +11,8 @@ export type PreguntaTipo = "unica" | "multiple";
 export type EventoAcademicoTipo = "evaluacion" | "entrega" | "sesion" | "aviso";
 export type EntregaEstado = "enviada" | "atrasada" | "revisada";
 export type AreaTipo = "area" | "unidad_negocio" | "campana";
+export type MaterialCursoEstado = "subido" | "procesando" | "listo" | "error";
+export type GeneracionCursoEstado = "procesando" | "completado" | "error";
 
 export interface Institucion {
   id: string;
@@ -90,6 +92,33 @@ export interface Leccion {
   duracion_min: number | null;
   orden: number;
   created_at: string;
+}
+
+export interface CursoMaterial {
+  id: string;
+  curso_id: string;
+  nombre_archivo: string;
+  storage_path: string;
+  mime_type: string;
+  tamanio_bytes: number;
+  estado: MaterialCursoEstado;
+  texto_extraido: string | null;
+  llama_file_id: string | null;
+  llama_job_id: string | null;
+  detalle_error: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CursoGeneracion {
+  id: string;
+  curso_id: string;
+  creado_por: string;
+  estado: GeneracionCursoEstado;
+  materiales_procesados: number;
+  detalle_error: string | null;
+  created_at: string;
+  completed_at: string | null;
 }
 
 export interface Quiz {
@@ -262,6 +291,8 @@ export interface Database {
       curso_areas: Table<CursoArea>;
       profiles: Table<Profile>;
       cursos: Table<Curso>;
+      curso_materiales: Table<CursoMaterial>;
+      curso_generaciones: Table<CursoGeneracion>;
       modulos: Table<Modulo>;
       lecciones: Table<Leccion>;
       quizzes: Table<Quiz>;

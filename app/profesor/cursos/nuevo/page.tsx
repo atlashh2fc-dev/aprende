@@ -21,7 +21,7 @@ export default async function NuevoCursoProfesorPage() {
           <p className="eyebrow" style={{ color: "var(--primary)" }}>Profesor</p>
           <SectionTitle>Nuevo curso</SectionTitle>
           <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            Crea el curso en borrador; luego agregas módulos, lecciones y quizzes.
+            Crea el curso en borrador y luego sube tu material para construir módulos, lecciones y quizzes con IA.
           </p>
         </div>
         <div className="animate-rise rise-2">
