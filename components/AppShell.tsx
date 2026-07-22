@@ -1,10 +1,12 @@
 import { AppNav } from "@/components/AppNav";
 import { initials } from "@/lib/auth";
 import type { SessionUser } from "@/lib/auth";
+import { readRolePreview } from "@/lib/role-preview";
 import { createClient } from "@/lib/supabase/server";
 
 export async function AppShell({ user, children }: { user: SessionUser; children: React.ReactNode }) {
   const supabase = await createClient();
+  const previewRole = await readRolePreview(user.rol);
   let unreadNotifications = 0;
   if (supabase) {
     const { count } = await supabase
@@ -18,6 +20,7 @@ export async function AppShell({ user, children }: { user: SessionUser; children
     <div className="min-h-screen">
       <AppNav
         unreadNotifications={unreadNotifications}
+        previewRole={previewRole}
         user={{
           nombre: user.nombre,
           email: user.email,

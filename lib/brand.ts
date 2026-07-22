@@ -45,9 +45,9 @@ export interface Brand {
  * El modo oscuro conserva contraste y sobriedad, sin negro puro.
  */
 const DEFAULT_BRAND: Brand = {
-  name: "Aprende",
+  name: "Atlas Aprende",
   tagline: "El centro de aprendizaje para tu comunidad",
-  logoUrl: null,
+  logoUrl: "/brand/atlas-aprende-logo-yellow.png",
   mode: "light",
   light: {
     primary: "#124E66",

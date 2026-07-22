@@ -125,7 +125,7 @@ export function CourseMaterialBuilder({ courseId, userId, materials, hasExisting
         <div>
           <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Material fuente</p>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Sube PDF, Word, PowerPoint, texto o imágenes. La IA leerá el material y construirá módulos, lecciones y quizzes en el formato estándar de Aprende.
+            Sube PDF, Word, PowerPoint, texto o imágenes. La IA leerá el material y construirá módulos, lecciones y quizzes en el formato estándar de Atlas Aprende.
           </p>
         </div>
         <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading || generating}

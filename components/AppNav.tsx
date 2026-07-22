@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, Eye, LogOut } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
@@ -41,13 +41,16 @@ const LINKS_BY_ROLE: Record<UserRole, NavLink[]> = {
   ],
 };
 
-export function AppNav({ user, unreadNotifications = 0 }: {
+export function AppNav({ user, unreadNotifications = 0, previewRole = null }: {
   user: { nombre: string | null; email: string; rol: UserRole; avatar_url: string | null; avatar_initials: string };
   unreadNotifications?: number;
+  previewRole?: UserRole | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const links = LINKS_BY_ROLE[user.rol] ?? LINKS_BY_ROLE.alumno;
+  const visibleRole = previewRole ?? user.rol;
+  const isPreviewing = user.rol === "admin" && visibleRole !== "admin";
+  const links = LINKS_BY_ROLE[visibleRole] ?? LINKS_BY_ROLE.alumno;
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -55,6 +58,17 @@ export function AppNav({ user, unreadNotifications = 0 }: {
     const supabase = createClient();
     if (supabase) await supabase.auth.signOut();
     router.push("/");
+    router.refresh();
+  }
+
+  async function changeRolePreview(role: UserRole) {
+    const response = await fetch("/api/admin/vista-rol", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    if (!response.ok) return;
+    router.push("/dashboard");
     router.refresh();
   }
 
@@ -94,6 +108,23 @@ export function AppNav({ user, unreadNotifications = 0 }: {
         </div>
 
         <div className="flex items-center gap-3">
+          {user.rol === "admin" && (
+            <label className="flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-semibold" style={{ border: "1px solid var(--border-strong)", color: "var(--primary)", background: "var(--surface)" }}>
+              <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <select
+                aria-label="Ver la plataforma como otro rol"
+                value={visibleRole}
+                onChange={(event) => void changeRolePreview(event.target.value as UserRole)}
+                className="max-w-20 bg-transparent text-xs font-semibold outline-none sm:max-w-none"
+                style={{ color: "var(--primary)" }}
+              >
+                <option value="admin">Como admin</option>
+                <option value="profesor">Como profesor</option>
+                <option value="supervisor">Como supervisor</option>
+                <option value="alumno">Como alumno</option>
+              </select>
+            </label>
+          )}
           <Link href="/notificaciones" title="Notificaciones"
             className="relative flex h-9 w-9 items-center justify-center rounded-xl transition-all hover:-translate-y-px active:scale-95"
             style={{ border: "1px solid var(--border-strong)", color: "var(--text-muted)", background: "var(--surface)", boxShadow: "var(--shadow-xs)" }}>
@@ -106,7 +137,7 @@ export function AppNav({ user, unreadNotifications = 0 }: {
               {user.nombre ?? user.email.split("@")[0]}
             </span>
             <span className="block text-[0.65rem] uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-              {ROLE_LABEL[user.rol]}
+              {isPreviewing ? `Vista: ${ROLE_LABEL[visibleRole]}` : ROLE_LABEL[user.rol]}
             </span>
           </span>
           {user.avatar_url ? (

@@ -9,6 +9,7 @@ import { LearnerReport, type LearnerReportRow } from "@/components/LearnerReport
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
+import { effectiveRole, readRolePreview } from "@/lib/role-preview";
 import type { Curso } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,8 @@ export default async function DashboardPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/dashboard");
   const supabase = await createClient();
-  const role = user.rol;
+  const role = effectiveRole(user.rol, await readRolePreview(user.rol));
+  const isPreviewing = user.rol === "admin" && role !== "admin";
 
   return (
     <AppShell user={user}>
@@ -31,6 +33,11 @@ export default async function DashboardPage() {
             style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 700, color: "var(--text)" }}>
             Hola, {displayName(user)}.
           </h1>
+          {isPreviewing && (
+            <p className="mt-2 text-xs" style={{ color: "var(--text-faint)" }}>
+              Vista previa de {ROLE_LABEL[role]}. Los datos y permisos siguen siendo los de tu cuenta administradora.
+            </p>
+          )}
         </div>
 
         {role === "alumno" && <AlumnoView userId={user.id} />}
