@@ -115,6 +115,9 @@ export interface CursoGeneracion {
   curso_id: string;
   creado_por: string;
   estado: GeneracionCursoEstado;
+  progreso: number;
+  etapa: string;
+  mensaje_progreso: string | null;
   materiales_procesados: number;
   detalle_error: string | null;
   created_at: string;

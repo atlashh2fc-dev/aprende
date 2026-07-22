@@ -164,9 +164,12 @@ function validateQuiz(quiz: GeneratedQuiz) {
     throw new Error("invalid_course_blueprint");
   }
   for (const question of quiz.preguntas) {
-    const correct = question.opciones?.filter((option) => option.esCorrecta).length ?? 0;
-    if (!question.enunciado?.trim() || !["unica", "multiple"].includes(question.tipo) ||
-      !Array.isArray(question.opciones) || question.opciones.length < 2 || correct === 0 ||
+    const correct = question.opciones?.filter((option) => option?.esCorrecta === true).length ?? 0;
+    const hasInvalidOption = !Array.isArray(question.opciones) || question.opciones.some((option) =>
+      !option || typeof option.texto !== "string" || !option.texto.trim() || typeof option.esCorrecta !== "boolean"
+    );
+    if (typeof question.enunciado !== "string" || !question.enunciado.trim() || !["unica", "multiple"].includes(question.tipo) ||
+      !Array.isArray(question.opciones) || question.opciones.length < 2 || hasInvalidOption || correct === 0 ||
       (question.tipo === "unica" && correct !== 1)) throw new Error("invalid_course_blueprint");
   }
 }

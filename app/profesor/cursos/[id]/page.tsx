@@ -8,7 +8,7 @@ import { ModulosManager } from "@/components/admin/ModulosManager";
 import { CourseMaterialBuilder } from "@/components/admin/CourseMaterialBuilder";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Curso, CursoMaterial, Leccion, Modulo } from "@/lib/supabase/database.types";
+import type { Curso, CursoGeneracion, CursoMaterial, Leccion, Modulo } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
 
@@ -30,12 +30,14 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
     .from("lecciones").select("*").eq("curso_id", id).order("orden", { ascending: true });
   const lecciones = (leccionesRaw as Leccion[] | null) ?? [];
 
-  const [{ data: modulosRaw }, { data: materialsRaw }] = await Promise.all([
+  const [{ data: modulosRaw }, { data: materialsRaw }, { data: generationsRaw }] = await Promise.all([
     supabase.from("modulos").select("*").eq("curso_id", id).order("orden", { ascending: true }),
     supabase.from("curso_materiales").select("*").eq("curso_id", id).order("created_at", { ascending: true }),
+    supabase.from("curso_generaciones").select("*").eq("curso_id", id).order("created_at", { ascending: false }).limit(1),
   ]);
   const modulos = (modulosRaw as Modulo[] | null) ?? [];
   const materials = (materialsRaw as CursoMaterial[] | null) ?? [];
+  const latestGeneration = ((generationsRaw as CursoGeneracion[] | null) ?? [])[0] ?? null;
 
   const leccionesPorModulo: Record<string, number> = {};
   lecciones.forEach((l) => { if (l.modulo_id) leccionesPorModulo[l.modulo_id] = (leccionesPorModulo[l.modulo_id] ?? 0) + 1; });
@@ -82,7 +84,7 @@ export default async function EditarCursoProfesorPage({ params }: { params: Prom
             <Sparkles className="h-4 w-4" style={{ color: "var(--primary)" }} />
             <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>Construir desde material</h2>
           </div>
-          <CourseMaterialBuilder courseId={curso.id} userId={user.id} materials={materials} hasExistingContent={lecciones.length > 0 || modulos.length > 0} />
+          <CourseMaterialBuilder courseId={curso.id} userId={user.id} materials={materials} latestGeneration={latestGeneration} hasExistingContent={lecciones.length > 0 || modulos.length > 0} />
         </div>
 
         <div className="animate-rise rise-4 mt-10">

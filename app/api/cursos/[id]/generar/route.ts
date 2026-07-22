@@ -10,6 +10,27 @@ export const maxDuration = 300;
 
 const MAX_SOURCE_CHARS = 100_000;
 const MAX_CHARS_PER_FILE = 28_000;
+const STALE_GENERATION_MS = 6 * 60 * 1000;
+
+type Progress = { progreso: number; etapa: string; mensaje?: string | null };
+
+function describeError(error: unknown) {
+  if (!(error instanceof Error)) return "generation_failed";
+  return error.message.slice(0, 500);
+}
+
+function publicError(detail: string) {
+  if (detail.startsWith("invalid_course_blueprint")) {
+    return "La IA devolvió un quiz incompleto. No se modificó el curso; inténtalo nuevamente.";
+  }
+  if (detail.startsWith("option_insert_failed")) {
+    return "No pudimos guardar una alternativa de un quiz generado. No se modificó el curso; inténtalo nuevamente.";
+  }
+  if (detail.startsWith("storage_download_failed")) {
+    return "No pudimos abrir uno de los archivos privados. Vuelve a subirlo e inténtalo nuevamente.";
+  }
+  return "No fue posible construir el curso. No se modificó el contenido existente.";
+}
 
 export async function POST(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id: cursoId } = await context.params;
@@ -36,6 +57,34 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
+  // Una función de Vercel puede terminar abruptamente al alcanzar su límite.
+  // Cerramos esas ejecuciones antes de permitir un nuevo intento, para que no
+  // queden visibles como activas para siempre ni bloqueen al profesor.
+  const staleBefore = new Date(Date.now() - STALE_GENERATION_MS).toISOString();
+  await admin.from("curso_generaciones").update({
+    estado: "error",
+    progreso: 100,
+    etapa: "Tiempo de espera agotado",
+    mensaje_progreso: "La generación tardó demasiado. Puedes volver a intentarlo.",
+    detalle_error: "generation_timeout",
+    completed_at: new Date().toISOString(),
+  } as never).eq("curso_id", cursoId).eq("estado", "procesando").lt("created_at", staleBefore);
+
+  const { data: activeGenerationRaw } = await admin
+    .from("curso_generaciones")
+    .select("id")
+    .eq("curso_id", cursoId)
+    .eq("estado", "procesando")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (activeGenerationRaw) {
+    return NextResponse.json({
+      error: "generation_in_progress",
+      message: "Este curso ya se está construyendo. Espera a que termine antes de iniciar otro intento.",
+    }, { status: 409 });
+  }
+
   const [{ count: existingLessons }, { count: existingModules }] = await Promise.all([
     admin.from("lecciones").select("id", { count: "exact", head: true }).eq("curso_id", cursoId),
     admin.from("modulos").select("id", { count: "exact", head: true }).eq("curso_id", cursoId),
@@ -57,11 +106,20 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
 
   const { data: generationRaw, error: generationError } = await admin
     .from("curso_generaciones")
-    .insert({ curso_id: cursoId, creado_por: user.id, estado: "procesando" } as never)
+    .insert({
+      curso_id: cursoId, creado_por: user.id, estado: "procesando", progreso: 3,
+      etapa: "Preparando curso", mensaje_progreso: "Validando el curso y el material fuente.",
+    } as never)
     .select("id")
     .single();
   if (generationError || !generationRaw) return NextResponse.json({ error: "generation_start_failed" }, { status: 500 });
   const generationId = (generationRaw as { id: string }).id;
+  async function reportProgress({ progreso, etapa, mensaje = null }: Progress) {
+    const { error } = await admin!.from("curso_generaciones").update({
+      progreso, etapa, mensaje_progreso: mensaje,
+    } as never).eq("id", generationId);
+    if (error) throw new Error(`progress_update_failed:${error.code ?? "unknown"}`);
+  }
 
   let activeMaterialId: string | null = null;
   // Supabase REST no permite envolver estas inserciones relacionadas en una única
@@ -71,7 +129,12 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
   const createdModuleIds: string[] = [];
   try {
     const sourceParts: string[] = [];
-    for (const material of materials) {
+    for (const [materialIndex, material] of materials.entries()) {
+      await reportProgress({
+        progreso: 8 + Math.round((materialIndex / materials.length) * 34),
+        etapa: "Leyendo documentos",
+        mensaje: `Analizando ${materialIndex + 1} de ${materials.length}: ${material.nombre_archivo}`,
+      });
       let text = material.texto_extraido;
       if (!text) {
         activeMaterialId = material.id;
@@ -91,7 +154,9 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
 
     const source = sourceParts.join("\n\n").slice(0, MAX_SOURCE_CHARS);
     if (!source.trim()) throw new Error("empty_source_material");
+    await reportProgress({ progreso: 46, etapa: "Diseñando el curso", mensaje: "Organizando módulos, lecciones y evaluaciones." });
     const blueprint = await createCourseBlueprint(curso.titulo, source);
+    const totalLessons = blueprint.modulos.reduce((sum, moduleDefinition) => sum + moduleDefinition.lecciones.length, 0);
 
     let lessonOrder = 0;
     for (const [moduleIndex, moduleDefinition] of blueprint.modulos.entries()) {
@@ -102,6 +167,11 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       createdModuleIds.push(moduleId);
 
       for (const lesson of moduleDefinition.lecciones) {
+        await reportProgress({
+          progreso: Math.min(94, 56 + Math.round((lessonOrder / Math.max(totalLessons, 1)) * 38)),
+          etapa: "Creando contenido",
+          mensaje: `Construyendo lección ${lessonOrder + 1} de ${totalLessons}: ${lesson.titulo}`,
+        });
         const { data: lessonRaw, error: lessonError } = await admin.from("lecciones").insert({
           curso_id: cursoId, modulo_id: moduleId, titulo: lesson.titulo.trim(), tipo: lesson.tipo,
           contenido: lesson.tipo === "texto" ? lesson.contenido.trim() : null,
@@ -129,7 +199,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
               pregunta_id: questionId, texto: option.texto.trim(), es_correcta: option.esCorrecta, orden: optionIndex,
             }));
             const { error: optionError } = await admin.from("quiz_opciones").insert(options as never);
-            if (optionError) throw new Error("option_insert_failed");
+            if (optionError) throw new Error(`option_insert_failed:${optionError.code ?? "unknown"}:${optionError.message}`);
           }
         }
       }
@@ -143,11 +213,12 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
     if (Object.keys(courseUpdate).length) await admin.from("cursos").update(courseUpdate as never).eq("id", cursoId);
 
     await admin.from("curso_generaciones").update({
-      estado: "completado", materiales_procesados: materials.length, completed_at: new Date().toISOString(),
+      estado: "completado", progreso: 100, etapa: "Curso listo", mensaje_progreso: "El curso fue construido y está listo para revisar.",
+      materiales_procesados: materials.length, completed_at: new Date().toISOString(),
     } as never).eq("id", generationId);
     return NextResponse.json({ ok: true, modules: blueprint.modulos.length, lessons: lessonOrder });
   } catch (error) {
-    const detail = error instanceof Error ? error.message : "generation_failed";
+    const detail = describeError(error);
     // Eliminar las lecciones primero evita que al borrar módulos la FK deje
     // lecciones huérfanas (modulo_id usa ON DELETE SET NULL). Los quizzes y sus
     // preguntas/opciones se eliminan mediante las cascadas de lecciones.
@@ -161,8 +232,9 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       await admin.from("curso_materiales").update({ estado: "error", detalle_error: detail.slice(0, 500) } as never).eq("id", activeMaterialId);
     }
     await admin.from("curso_generaciones").update({
-      estado: "error", detalle_error: detail.slice(0, 500), completed_at: new Date().toISOString(),
+      estado: "error", progreso: 100, etapa: "No se pudo completar", mensaje_progreso: publicError(detail),
+      detalle_error: detail, completed_at: new Date().toISOString(),
     } as never).eq("id", generationId);
-    return NextResponse.json({ error: "generation_failed", message: "No fue posible construir el curso. Revisa los materiales e inténtalo nuevamente." }, { status: 502 });
+    return NextResponse.json({ error: "generation_failed", message: publicError(detail) }, { status: 502 });
   }
 }
