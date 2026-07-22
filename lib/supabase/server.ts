@@ -13,7 +13,6 @@ export function isSupabaseConfigured(): boolean {
 export async function createClient() {
   if (!isSupabaseConfigured()) return null;
   const cookieStore = await cookies();
-  const embeddedDemo = cookieStore.get("geimser-demo-embed")?.value === "1";
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,7 +27,6 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, {
                 ...(options as Parameters<typeof cookieStore.set>[2]),
-                ...(embeddedDemo ? { sameSite: "none" as const, secure: true, partitioned: true } : {}),
               })
             );
           } catch {

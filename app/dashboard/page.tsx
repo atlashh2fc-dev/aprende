@@ -9,7 +9,6 @@ import { LearnerReport, type LearnerReportRow } from "@/components/LearnerReport
 import { getSessionUser, displayName } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL } from "@/lib/roles";
-import { readDemoRole, effectiveRole } from "@/lib/demo";
 import type { Curso } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +17,7 @@ export default async function DashboardPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/dashboard");
   const supabase = await createClient();
-  const demo = await readDemoRole();
-  const role = effectiveRole(user.rol, demo);
-  const enModoDemo = user.rol === "admin" && !!demo && demo !== "admin";
+  const role = user.rol;
 
   return (
     <AppShell user={user}>
@@ -29,10 +26,6 @@ export default async function DashboardPage() {
         <div className="animate-rise mb-8">
           <p className="eyebrow flex items-center gap-2" style={{ color: "var(--primary)" }}>
             {ROLE_LABEL[role]}
-            {enModoDemo && (
-              <span className="rounded px-1.5 py-0.5 text-[0.6rem] font-bold uppercase not-italic"
-                style={{ background: "var(--accent-dim)", color: "var(--accent)" }}>Modo demo</span>
-            )}
           </p>
           <h1 className="mt-1 font-serif-brand tracking-tight"
             style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 700, color: "var(--text)" }}>

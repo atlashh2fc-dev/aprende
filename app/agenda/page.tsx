@@ -3,7 +3,6 @@ import { AppShell } from "@/components/AppShell";
 import { AgendaBoard } from "@/components/AgendaBoard";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { effectiveRole, readDemoRole } from "@/lib/demo";
 import type { EventoAcademicoTipo } from "@/lib/supabase/database.types";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +22,7 @@ export default async function AgendaPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/agenda");
   const supabase = await createClient();
-  const demo = await readDemoRole();
-  const role = effectiveRole(user.rol, demo);
-  const canManage = role === "profesor" || role === "admin";
+  const canManage = user.rol === "profesor" || user.rol === "admin";
 
   let events: EventRow[] = [];
   let courses: { id: string; titulo: string }[] = [];
