@@ -293,13 +293,15 @@ function BloqueVista({ bloque }: { bloque: Bloque }) {
       if (!src) return null;
       return (
         <figure className="mt-6">
-          {/* eslint-disable-next-line @next/next/no-img-element -- ilustraciones SVG propias del curso */}
-          <img src={src} alt={bloque.alt} loading="lazy" className="w-full rounded-xl" style={{ border: "1px solid var(--border)", background: "#fff" }} />
-          {bloque.alt && (
-            <figcaption className="mt-2 text-center text-xs" style={{ color: "var(--text-faint)" }}>
-              {bloque.alt}
-            </figcaption>
-          )}
+          {/* En el celular el diagrama queda chico: tocarlo lo abre completo. */}
+          <a href={src} target="_blank" rel="noopener noreferrer" className="block" aria-label={`Ampliar: ${bloque.alt || "imagen"}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- ilustraciones SVG propias del curso */}
+            <img src={src} alt={bloque.alt} loading="lazy" className="w-full rounded-xl" style={{ border: "1px solid var(--border)", background: "#fff" }} />
+          </a>
+          <figcaption className="mt-2 text-center text-xs" style={{ color: "var(--text-faint)" }}>
+            {bloque.alt}
+            <span className="sm:hidden">{bloque.alt ? " · " : ""}Toca para ampliar</span>
+          </figcaption>
         </figure>
       );
     }
