@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Embudo de venta en Atlas: cinco etapas y la salida No sigue con motivo">
+  <title>Embudo de venta en Atlas</title>
+  <rect width="800" height="500" fill="#ffffff"/>
+  <text x="400" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1524">Embudo de venta en Atlas</text>
+  <g font-size="20" font-weight="700" fill="#0f1524" text-anchor="middle">
+    <rect x="70" y="70" width="520" height="58" rx="12" fill="#eaeef2"/>
+    <text x="330" y="106">1 · No visitado</text>
+    <rect x="95" y="136" width="470" height="58" rx="12" fill="#1E9FDC" fill-opacity="0.25"/>
+    <text x="330" y="172">2 · Visitado</text>
+    <rect x="120" y="202" width="420" height="58" rx="12" fill="#1E9FDC" fill-opacity="0.5"/>
+    <text x="330" y="238">3 · Interesado</text>
+    <rect x="145" y="268" width="370" height="58" rx="12" fill="#1E9FDC" fill-opacity="0.8"/>
+    <text x="330" y="304">4 · Documentos / alta en MP</text>
+    <rect x="170" y="334" width="320" height="58" rx="12" fill="#1FA877"/>
+    <text x="330" y="370">5 · POS vendido</text>
+  </g>
+  <g stroke="#F5A524" stroke-width="3" fill="none" stroke-dasharray="6 5">
+    <path d="M590 99 H600 M565 165 H600 M540 231 H600 M515 297 H600 M600 99 V297"/>
+    <path d="M600 198 H612" stroke-dasharray="none"/>
+  </g>
+  <path d="M612 190 L624 198 L612 206 Z" fill="#F5A524"/>
+  <rect x="626" y="110" width="160" height="186" rx="12" fill="#F5A524" fill-opacity="0.15" stroke="#F5A524" stroke-width="2"/>
+  <text x="706" y="146" text-anchor="middle" font-size="22" font-weight="700" fill="#0f1524">No sigue</text>
+  <text x="706" y="174" text-anchor="middle" font-size="18" fill="#0f1524">con motivo</text>
+  <g font-size="18" fill="#0f1524">
+    <text x="640" y="210">• No interesado</text>
+    <text x="640" y="240">• Cerrado</text>
+    <text x="640" y="270">• No ubicado</text>
+  </g>
+  <rect x="40" y="418" width="720" height="62" rx="12" fill="#eaeef2"/>
+  <text x="400" y="456" text-anchor="middle" font-size="19" fill="#0f1524"><tspan font-weight="700">Cada visita:</tspan> foto de la fachada + GPS en el local + próxima acción</text>
+</svg>

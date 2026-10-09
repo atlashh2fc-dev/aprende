@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Lista para el alta de la cuenta Mercado Pago antes de irte del local">
+  <title>Alta de la cuenta Mercado Pago</title>
+  <rect width="800" height="450" fill="#ffffff"/>
+  <text x="30" y="42" font-size="25" font-weight="700" fill="#0f1524">Alta de cuenta: lista antes de irte del local</text>
+  <g fill="#eaeef2">
+    <rect x="30" y="64" width="490" height="54" rx="10"/>
+    <rect x="30" y="126" width="490" height="54" rx="10"/>
+    <rect x="30" y="188" width="490" height="54" rx="10"/>
+    <rect x="30" y="250" width="490" height="54" rx="10"/>
+    <rect x="30" y="312" width="490" height="54" rx="10"/>
+  </g>
+  <g fill="#1E9FDC">
+    <circle cx="62" cy="91" r="17"/><circle cx="62" cy="153" r="17"/><circle cx="62" cy="215" r="17"/><circle cx="62" cy="277" r="17"/><circle cx="62" cy="339" r="17"/>
+  </g>
+  <g font-size="18" font-weight="700" fill="#0f1524" text-anchor="middle">
+    <text x="62" y="97">1</text><text x="62" y="159">2</text><text x="62" y="221">3</text><text x="62" y="283">4</text><text x="62" y="345">5</text>
+  </g>
+  <g font-size="19" fill="#0f1524">
+    <text x="92" y="98">App instalada, con su sesión iniciada</text>
+    <text x="92" y="160">Correo y celular del propio comerciante</text>
+    <text x="92" y="222">Validación de identidad enviada</text>
+    <text x="92" y="284">Sabe dónde ver su saldo y actividad</text>
+    <text x="92" y="346">Atlas: “Documentos / alta en MP”</text>
+  </g>
+  <rect x="30" y="378" width="490" height="54" rx="10" fill="#1FA877"/>
+  <text x="275" y="412" text-anchor="middle" font-size="20" font-weight="700" fill="#0f1524">Cuenta lista para el Point</text>
+  <rect x="545" y="64" width="225" height="190" rx="12" fill="#F5A524" fill-opacity="0.15" stroke="#F5A524" stroke-width="2"/>
+  <g fill="#0f1524" text-anchor="middle">
+    <text x="657" y="98" font-size="18" font-weight="700">Si faltan antecedentes</text>
+    <text x="657" y="126" font-size="18">activación provisoria</text>
+    <text x="657" y="170" font-size="36" font-weight="700">30 días</text>
+    <text x="657" y="206" font-size="18">Terminar la validación</text>
+    <text x="657" y="232" font-size="18">el mismo día</text>
+  </g>
+  <rect x="545" y="270" width="225" height="162" rx="12" fill="#1E9FDC" fill-opacity="0.15" stroke="#1E9FDC" stroke-width="2"/>
+  <g fill="#0f1524" text-anchor="middle">
+    <text x="657" y="306" font-size="18" font-weight="700">Regla de oro</text>
+    <text x="657" y="338" font-size="18">Nunca pidas claves</text>
+    <text x="657" y="366" font-size="18">ni tomes las fotos</text>
+    <text x="657" y="394" font-size="18">de su cédula: tú</text>
+    <text x="657" y="420" font-size="18">acompañas</text>
+  </g>
+</svg>

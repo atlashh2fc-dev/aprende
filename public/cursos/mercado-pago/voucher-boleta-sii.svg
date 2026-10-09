@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 490" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Cuándo el comprobante del Point sirve como boleta según el medio de pago y el modelo de emisión en el SII">
+  <title>Comprobante y boleta</title>
+  <rect width="800" height="490" fill="#ffffff"/>
+  <text x="400" y="38" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1524">¿El comprobante sirve como boleta?</text>
+  <rect x="260" y="56" width="280" height="48" rx="24" fill="#0f1524"/>
+  <text x="400" y="87" text-anchor="middle" font-size="20" font-weight="700" fill="#ffffff">¿Cómo pagó el cliente?</text>
+  <path d="M330 104 L210 132 M470 104 L590 132" stroke="#0f1524" stroke-width="2.5" fill="none"/>
+  <rect x="110" y="132" width="200" height="44" rx="10" fill="#1E9FDC"/>
+  <text x="210" y="161" text-anchor="middle" font-size="20" font-weight="700" fill="#0f1524">Tarjeta o QR</text>
+  <rect x="490" y="132" width="200" height="44" rx="10" fill="#F5A524"/>
+  <text x="590" y="161" text-anchor="middle" font-size="20" font-weight="700" fill="#0f1524">Efectivo</text>
+  <path d="M210 176 V194 M590 176 V194" stroke="#0f1524" stroke-width="2.5"/>
+  <rect x="40" y="194" width="340" height="100" rx="12" fill="#eaeef2"/>
+  <g text-anchor="middle" font-size="18" fill="#0f1524">
+    <text x="210" y="224" font-weight="700">¿Su modelo en el SII es</text>
+    <text x="210" y="250">“No emito boleta cuando</text>
+    <text x="210" y="276">recibo un pago electrónico”?</text>
+  </g>
+  <path d="M150 294 L122 314 M270 294 L298 314" stroke="#0f1524" stroke-width="2.5"/>
+  <rect x="40" y="314" width="165" height="76" rx="12" fill="#1FA877"/>
+  <rect x="215" y="314" width="165" height="76" rx="12" fill="#F5A524" fill-opacity="0.35"/>
+  <g text-anchor="middle" font-size="18" fill="#0f1524">
+    <text x="122" y="346" font-weight="700">Sí: vale</text>
+    <text x="122" y="372" font-weight="700">como boleta</text>
+    <text x="297" y="346" font-weight="700">No: emitir</text>
+    <text x="297" y="372" font-weight="700">boleta</text>
+  </g>
+  <rect x="420" y="194" width="340" height="100" rx="12" fill="#F5A524" fill-opacity="0.15" stroke="#F5A524" stroke-width="2"/>
+  <g text-anchor="middle" font-size="18" fill="#0f1524">
+    <text x="590" y="232" font-weight="700">Siempre requiere boleta</text>
+    <text x="590" y="260">Con el servicio de boletas</text>
+    <text x="590" y="284">se emite desde el Point Smart</text>
+  </g>
+  <rect x="420" y="314" width="340" height="120" rx="12" fill="#1E9FDC" fill-opacity="0.15" stroke="#1E9FDC" stroke-width="2"/>
+  <g font-size="18" fill="#0f1524">
+    <text x="436" y="344" font-weight="700">Si contrata el servicio de boletas:</text>
+    <text x="436" y="370">declarar en el SII “Siempre emito</text>
+    <text x="436" y="394">boleta, aun cuando reciba un pago</text>
+    <text x="436" y="420">electrónico” para no duplicar IVA</text>
+  </g>
+  <text x="40" y="416" font-size="18" fill="#0f1524">Mercado Pago informa al SII</text>
+  <text x="40" y="440" font-size="18" fill="#0f1524">las ventas con tarjeta y QR.</text>
+  <text x="400" y="476" text-anchor="middle" font-size="18" font-weight="700" fill="#0f1524">El modelo de emisión lo decide el comerciante con su contador</text>
+</svg>

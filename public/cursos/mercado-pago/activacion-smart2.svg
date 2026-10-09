@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Seis pasos para activar el Point Smart 2">
+  <title>Activar el Point Smart 2</title>
+  <rect width="800" height="450" fill="#ffffff"/>
+  <text x="400" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1524">Activar el Point Smart 2 en 6 pasos</text>
+  <g fill="#eaeef2">
+    <rect x="30" y="62" width="240" height="150" rx="14"/>
+    <rect x="280" y="62" width="240" height="150" rx="14"/>
+    <rect x="530" y="62" width="240" height="150" rx="14"/>
+    <rect x="30" y="226" width="240" height="150" rx="14"/>
+    <rect x="280" y="226" width="240" height="150" rx="14"/>
+    <rect x="530" y="226" width="240" height="150" rx="14" fill="#1FA877" fill-opacity="0.18" stroke="#1FA877" stroke-width="2"/>
+  </g>
+  <g fill="#1E9FDC">
+    <circle cx="66" cy="96" r="20"/><circle cx="316" cy="96" r="20"/><circle cx="566" cy="96" r="20"/>
+    <circle cx="66" cy="260" r="20"/><circle cx="316" cy="260" r="20"/><circle cx="566" cy="260" r="20" fill="#1FA877"/>
+  </g>
+  <g font-size="20" font-weight="700" fill="#0f1524" text-anchor="middle">
+    <text x="66" y="103">1</text><text x="316" y="103">2</text><text x="566" y="103">3</text>
+    <text x="66" y="267">4</text><text x="316" y="267">5</text><text x="566" y="267">6</text>
+  </g>
+  <g font-size="18" fill="#0f1524">
+    <text x="46" y="146" font-weight="700">Cargar la batería</text>
+    <text x="46" y="172">completa antes</text>
+    <text x="46" y="198">de empezar</text>
+
+    <text x="296" y="146" font-weight="700">Encender</text>
+    <text x="296" y="172">manteniendo</text>
+    <text x="296" y="198">presionado el botón</text>
+
+    <text x="546" y="146" font-weight="700">Seguir la pantalla</text>
+    <text x="546" y="172">y leer el código</text>
+    <text x="546" y="198">con la app</text>
+
+    <text x="46" y="310" font-weight="700">Iniciar sesión</text>
+    <text x="46" y="336">con la cuenta del</text>
+    <text x="46" y="362">comerciante</text>
+
+    <text x="296" y="310" font-weight="700">Se conecta solo</text>
+    <text x="296" y="336">al 4G del chip;</text>
+    <text x="296" y="362">Wi-Fi de respaldo</text>
+
+    <text x="546" y="310" font-weight="700">Venta de prueba</text>
+    <text x="546" y="336">de bajo monto y</text>
+    <text x="546" y="362">anularla (opcional)</text>
+  </g>
+  <rect x="30" y="392" width="740" height="48" rx="12" fill="#1E9FDC" fill-opacity="0.15"/>
+  <text x="400" y="423" text-anchor="middle" font-size="18" fill="#0f1524"><tspan font-weight="700">Point Mini:</tspan> app de Mercado Pago → “Cobrar con Point” → Bluetooth</text>
+</svg>
