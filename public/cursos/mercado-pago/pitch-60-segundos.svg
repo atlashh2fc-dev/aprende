@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Estructura del pitch: presentación 5 segundos, gancho 10, propuesta 25 y pregunta de paso 10">
+  <title>Estructura del pitch</title>
+  <rect width="800" height="450" fill="#ffffff"/>
+  <text x="400" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1524">El pitch en menos de un minuto</text>
+  <rect x="40" y="62" width="72" height="50" fill="#0f1524" fill-opacity="0.75"/>
+  <rect x="112" y="62" width="144" height="50" fill="#F5A524"/>
+  <rect x="256" y="62" width="360" height="50" fill="#1E9FDC"/>
+  <rect x="616" y="62" width="144" height="50" fill="#1FA877"/>
+  <g text-anchor="middle" font-size="20" font-weight="700" fill="#0f1524">
+    <text x="76" y="94" fill="#ffffff">5 s</text>
+    <text x="184" y="94">10 s</text>
+    <text x="436" y="94">25 s</text>
+    <text x="688" y="94">10 s</text>
+  </g>
+  <g fill="#eaeef2">
+    <rect x="30" y="134" width="180" height="170" rx="12"/>
+    <rect x="217" y="134" width="180" height="170" rx="12"/>
+    <rect x="404" y="134" width="180" height="170" rx="12"/>
+    <rect x="591" y="134" width="180" height="170" rx="12"/>
+  </g>
+  <rect x="30" y="134" width="180" height="8" rx="4" fill="#0f1524" fill-opacity="0.75"/>
+  <rect x="217" y="134" width="180" height="8" rx="4" fill="#F5A524"/>
+  <rect x="404" y="134" width="180" height="8" rx="4" fill="#1E9FDC"/>
+  <rect x="591" y="134" width="180" height="8" rx="4" fill="#1FA877"/>
+  <g font-size="18" fill="#0f1524">
+    <text x="44" y="176" font-weight="700" font-size="20">1 Presentación</text>
+    <text x="44" y="210">Nombre, empresa</text>
+    <text x="44" y="236">y marca</text>
+
+    <text x="231" y="176" font-weight="700" font-size="20">2 Gancho</text>
+    <text x="231" y="210">Un beneficio</text>
+    <text x="231" y="236">ligado a lo que</text>
+    <text x="231" y="262">observaste</text>
+
+    <text x="418" y="176" font-weight="700" font-size="20">3 Propuesta</text>
+    <text x="418" y="210">Tres ideas</text>
+    <text x="418" y="236">simples</text>
+
+    <text x="605" y="176" font-weight="700" font-size="20">4 Pregunta</text>
+    <text x="605" y="210">Una pregunta</text>
+    <text x="605" y="236">que abra la</text>
+    <text x="605" y="262">conversación</text>
+  </g>
+  <rect x="30" y="322" width="741" height="56" rx="12" fill="#1E9FDC" fill-opacity="0.15" stroke="#1E9FDC" stroke-width="2"/>
+  <text x="400" y="357" text-anchor="middle" font-size="18" fill="#0f1524"><tspan font-weight="700">Ideas fuerza:</tspan> sin arriendo · dinero al instante · soporte 24 h y garantía 1 año</text>
+  <text x="400" y="420" text-anchor="middle" font-size="21" font-weight="700" fill="#0f1524">Objetivo: ganar el derecho a hacer preguntas</text>
+</svg>

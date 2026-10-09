@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ArrowRight, PlayCircle, FileText, HelpCircle } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ContentRenderer } from "@/components/ContentRenderer";
+import { LessonContent } from "@/components/LessonContent";
 import { QuizTaker } from "@/components/QuizTaker";
 import { MarcarCompletada } from "@/components/MarcarCompletada";
 import { TutorChat } from "@/components/TutorChat";
@@ -179,9 +180,8 @@ export default async function LeccionPage({
           )}
 
           {leccion.tipo === "texto" && leccion.contenido && (
-            <article className="card whitespace-pre-line p-7 text-[0.95rem] leading-relaxed sm:p-9"
-              style={{ color: "var(--text-muted)" }}>
-              {leccion.contenido}
+            <article className="card p-6 sm:p-9">
+              <LessonContent texto={leccion.contenido} />
             </article>
           )}
 

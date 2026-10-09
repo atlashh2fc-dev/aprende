@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Línea de tiempo: si empieza en febrero, las ventas de marzo definen la comisión de abril">
+  <title>Tasa inicial y primer tramo</title>
+  <rect width="800" height="450" fill="#ffffff"/>
+  <text x="400" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#0f1524">¿Cuándo se fija el tramo? Ejemplo oficial</text>
+  <text x="400" y="68" text-anchor="middle" font-size="18" fill="#0f1524">Si empieza en febrero, marzo define la comisión de abril (tasas + IVA)</text>
+  <g fill="#0f1524">
+    <rect x="22" y="90" width="236" height="200" rx="12" fill="#eaeef2"/>
+    <rect x="22" y="90" width="236" height="48" rx="12" fill="#1E9FDC" fill-opacity="0.5"/>
+    <text x="140" y="122" text-anchor="middle" font-size="24" font-weight="700">Febrero</text>
+    <text x="36" y="170" font-size="18" font-weight="700">Empieza a cobrar</text>
+    <text x="36" y="200" font-size="18">Tasa inicial:</text>
+    <text x="36" y="228" font-size="18">1,79% débito</text>
+    <text x="36" y="256" font-size="18">2,49% crédito</text>
+
+    <rect x="282" y="90" width="236" height="200" rx="12" fill="#eaeef2"/>
+    <rect x="282" y="90" width="236" height="48" rx="12" fill="#1E9FDC" fill-opacity="0.8"/>
+    <text x="400" y="122" text-anchor="middle" font-size="24" font-weight="700">Marzo</text>
+    <text x="296" y="170" font-size="18" font-weight="700">Primer mes completo</text>
+    <text x="296" y="200" font-size="18">Sigue la tasa inicial</text>
+    <text x="296" y="228" font-size="18">Sus ventas con tarjeta</text>
+    <text x="296" y="256" font-size="18">definen el tramo</text>
+
+    <rect x="542" y="90" width="236" height="200" rx="12" fill="#1FA877" fill-opacity="0.15" stroke="#1FA877" stroke-width="2"/>
+    <rect x="542" y="90" width="236" height="48" rx="12" fill="#1FA877"/>
+    <text x="660" y="122" text-anchor="middle" font-size="24" font-weight="700">Abril</text>
+    <text x="556" y="170" font-size="18" font-weight="700">El 1 de abril suma</text>
+    <text x="556" y="200" font-size="18">las ventas de marzo</text>
+    <text x="556" y="228" font-size="18">Paga la comisión del</text>
+    <text x="556" y="256" font-size="18">tramo alcanzado</text>
+  </g>
+  <g fill="#0f1524">
+    <path d="M260 190 H270" stroke="#0f1524" stroke-width="3"/>
+    <path d="M268 182 L280 190 L268 198 Z"/>
+    <path d="M520 190 H530" stroke="#0f1524" stroke-width="3"/>
+    <path d="M528 182 L540 190 L528 198 Z"/>
+  </g>
+  <rect x="30" y="316" width="740" height="104" rx="12" fill="#F5A524" fill-opacity="0.15" stroke="#F5A524" stroke-width="2"/>
+  <text x="50" y="356" font-size="18" fill="#0f1524"><tspan font-weight="700">Tasa inicial:</tspan> solo si no cobró con máquinas Smart en los últimos 12 meses.</text>
+  <text x="50" y="390" font-size="18" fill="#0f1524"><tspan font-weight="700">No suman al tramo:</tspan> QR, Link de pago, efectivo ni tarjetas de alimentación.</text>
+</svg>

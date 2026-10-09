@@ -8,7 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 import { aiChat, aiConfigured, type ChatMessage } from "@/lib/ai";
 import type { Curso, Leccion } from "@/lib/supabase/database.types";
 
-const MAX_CONTEXT = 8000; // chars de contexto máx.
+// Un curso completo cabe (el de Mercado Pago tiene ~100k caracteres); con
+// 8.000 el tutor solo veía la primera lección.
+const MAX_CONTEXT = 120000; // chars de contexto máx.
 const MAX_HISTORY = 8;    // mensajes de historial que aceptamos
 
 export async function POST(request: Request) {
